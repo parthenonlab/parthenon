@@ -1,8 +1,11 @@
 {
   "name": "parthenon",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "private": true,
-  "author": "athena@parthenon.app",
+  "author": {
+    "name": "Athena",
+    "email": "athena@parthenon.app"
+  },
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
