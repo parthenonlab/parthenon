@@ -24,7 +24,8 @@ export const TWITCH_COMMANDS = [
     note: 'Accepted Value: <positive number>',
   },
   {
-    name: '!hug <@username>',
+    name: '!hug',
+    sub: '<@username>',
     description: 'Give someone a hug in chat',
   },
   {
