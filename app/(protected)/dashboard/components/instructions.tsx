@@ -10,12 +10,12 @@ export const Instructions = ({ code }: { code?: string }) => {
           <code className={styles.userCode}>{code}</code>
           <div className={styles.steps}>
             <p>
-              In the Discord server, use the <code>/link</code> command and
-              enter the code.
+              In the Discord server, use <code>/link</code> and enter the code.
             </p>
             <p className={styles.note}>
-              Note: Should you need to unlink your accounts, use{' '}
-              <code>/unlink</code> in the server.
+              Note: If you have the same email address, login via Discord and it
+              should link automatically. To unlink, use <code>/unlink</code> in
+              the server.
             </p>
           </div>
         </>
@@ -25,8 +25,9 @@ export const Instructions = ({ code }: { code?: string }) => {
           <div className={styles.steps}>
             <p>Login on this website via Twitch.</p>
             <p>
-              You will be provided a code to submit using <code>/link</code> in
-              the server.
+              If you use the same email address for both platforms, it will link
+              automatically. Otherwise, you will be provided a code to submit
+              using <code>/link</code> in the server.
             </p>
           </div>
         </>
