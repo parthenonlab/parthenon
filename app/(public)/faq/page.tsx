@@ -14,8 +14,8 @@ const FAQ = () => {
       <div className={styles.questions}>
         <h2>How can I link my Discord and Twitch accounts?</h2>
         <p>
-          If you use the same email for Twitch and Discord, log in with each on
-          this site and they'll link automatically.
+          If you use the same email for Twitch and Discord, log in via each
+          platform on this site to link automatically.
         </p>
         <p>
           Otherwise, if you have different email addresses, follow these steps:
