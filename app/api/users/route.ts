@@ -5,10 +5,7 @@ import { withApiAuth } from '@/lib/server';
 import { attemptUserMerge } from '@/services/user';
 
 export const POST = withApiAuth(
-  async (
-    request: NextRequest,
-    _context: { params: Promise<{ id: string }> }
-  ) => {
+  async (request: NextRequest, _context: { params: Promise<{}> }) => {
     try {
       await connectDatabase();
 
@@ -19,5 +16,5 @@ export const POST = withApiAuth(
     } catch (error) {
       return NextResponse.json({ error }, { status: 500 });
     }
-  }
+  },
 );

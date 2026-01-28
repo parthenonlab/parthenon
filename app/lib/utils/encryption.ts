@@ -1,7 +1,12 @@
 import crypto from 'crypto';
 
 const algorithm = 'aes-256-cbc';
-const encryptionKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY ?? '';
+const encryptionKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
+
+if (!encryptionKey || encryptionKey.length === 0) {
+  throw new Error('NEXT_PUBLIC_ENCRYPTION_KEY environment variable is not set');
+}
+
 const key = Uint8Array.from(Buffer.from(encryptionKey, 'hex'));
 
 export const encrypt = (value: string): string => {

@@ -8,6 +8,7 @@ export * from './menu-x';
 export * from './rules';
 export * from './silver';
 export * from './silver-reverse';
+export * from './social-bsky';
 export * from './social-discord';
 export * from './social-github';
 export * from './social-instagram';
