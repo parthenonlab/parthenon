@@ -4,11 +4,18 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import { SignInButton, useUser } from '@clerk/nextjs';
 
+import { Header, Loading } from '@/components';
 import { SOCIAL_URLS } from '@/constants/navigation';
 import avatar from '@/images/avatar.png';
-import { GithubIcon, InstagramIcon, TwitchIcon, XIcon } from '@/images/icons';
 
-import { Header, Loading } from '@/components';
+import {
+  BskyIcon,
+  GithubIcon,
+  InstagramIcon,
+  TwitchIcon,
+  XIcon,
+} from '@/images/icons';
+
 import styles from '@/styles/page.module.scss';
 
 const Home = () => {
@@ -48,6 +55,9 @@ const Home = () => {
               </a>
               <a href={SOCIAL_URLS.X} target="_blank">
                 <XIcon />
+              </a>
+              <a href={SOCIAL_URLS.Bluesky} target="_blank">
+                <BskyIcon />
               </a>
               <a href={SOCIAL_URLS.Github} target="_blank">
                 <GithubIcon />
