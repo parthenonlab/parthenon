@@ -5,10 +5,7 @@ import { withApiAuth } from '@/lib/server';
 import { createActiveGame, updateActiveGame } from '@/services/games';
 
 export const PATCH = withApiAuth(
-  async (
-    request: NextRequest,
-    _context: { params: Promise<{ id: string }> }
-  ) => {
+  async (request: NextRequest, _context: { params: Promise<{}> }) => {
     try {
       await connectDatabase();
 
@@ -19,14 +16,11 @@ export const PATCH = withApiAuth(
     } catch (error) {
       return NextResponse.json({ error }, { status: 500 });
     }
-  }
+  },
 );
 
 export const POST = withApiAuth(
-  async (
-    request: NextRequest,
-    _context: { params: Promise<{ id: string }> }
-  ) => {
+  async (request: NextRequest, _context: { params: Promise<{}> }) => {
     try {
       await connectDatabase();
 
@@ -37,5 +31,5 @@ export const POST = withApiAuth(
     } catch (error) {
       return NextResponse.json({ error }, { status: 500 });
     }
-  }
+  },
 );
