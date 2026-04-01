@@ -13,7 +13,7 @@ import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
 import { encrypt } from '@/lib/utils/encryption';
 
 import { BlackjackStats, GameObject } from '@/interfaces/games';
-import { UserObject } from '@/interfaces/user';
+import { User } from '@parthenonlab/types';
 
 import { Loading } from '@/components';
 import { Balance, GameTable, Rules, Stats } from './components';
@@ -101,7 +101,7 @@ const Blackjack = () => {
   );
 
   const updateUser = useCallback(
-    async (payload: Partial<UserObject>) => {
+    async (payload: Partial<User>) => {
       if (!user) return;
       setStateUser({ ...user, ...payload });
     },

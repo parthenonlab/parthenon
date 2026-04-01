@@ -9,7 +9,7 @@ import { decrypt } from '@/lib/utils';
 
 import { GameModel } from '@/models/game';
 import { StatModel } from '@/models/stat';
-import { UserModel } from '@/models/user';
+import { UserModel } from '@parthenonlab/models';
 
 export const updateWordleGame = async (
   game: GameObject,

@@ -1,31 +1,20 @@
-import {
-  LeanUserDocument,
-  UserAuthMethod,
-  UserObject,
-} from '@/interfaces/user';
+import { User } from '@parthenonlab/types';
+import { UserModel } from '@parthenonlab/models';
 
-import { UserModel } from '@/models/user';
+type LeanUser = User & { _id: string };
 
-/**
- * stripId
- * @returns A version of the document without the _id
- */
-const stripId = (doc: LeanUserDocument | null) =>
+const stripId = (doc: LeanUser | null) =>
   doc ? (({ _id, ...rest }) => rest)(doc) : null;
 
-/**
- * attemptUserMerge
- * @returns The updated User object containing both Discord and Twitch data or NULL
- */
 export const attemptUserMerge = async (payload: {
   discord_id: string;
   twitch_id: string;
-}): Promise<UserObject | null> => {
+}): Promise<User | null> => {
   const { discord_id, twitch_id } = payload;
 
   const discordDoc = await UserModel.findOne({
     discord_id,
-  }).lean<LeanUserDocument>();
+  }).lean<LeanUser>();
 
   const discordData = stripId(discordDoc);
 
@@ -33,12 +22,12 @@ export const attemptUserMerge = async (payload: {
 
   const twitchDoc = await UserModel.findOne({
     twitch_id,
-  }).lean<LeanUserDocument>();
+  }).lean<LeanUser>();
 
   const twitchData = stripId(twitchDoc);
 
   if (discordData && twitchData) {
-    const updatedUser: UserObject = {
+    const updatedUser: User = {
       ...discordData,
       twitch_id,
       twitch_username: twitchData.twitch_username,
@@ -56,21 +45,16 @@ export const attemptUserMerge = async (payload: {
   return discordData ?? twitchData ?? null;
 };
 
-/**
- * getUser
- * This fetches a User document by Discord or Twitch ID
- * @returns The User document or NULL
- */
 export const getUser = async (
   id: string,
-  method: UserAuthMethod
-): Promise<UserObject | null> => {
+  method: 'discord' | 'twitch'
+): Promise<User | null> => {
   const user = await UserModel.findOne({
     [`${method}_id`]: id,
-  }).lean<LeanUserDocument>();
+  }).lean<LeanUser>();
 
   if (!user) return null;
 
-  const { _id, ...rest } = user as LeanUserDocument;
+  const { _id, ...rest } = user as LeanUser;
   return rest;
 };
