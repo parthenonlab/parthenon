@@ -8,6 +8,16 @@ import { GameCode } from '@/enums/games';
 
 const validCodes = Object.values(GameCode);
 
+/**
+ * PATCH /api/games
+ * Updates an active game for the authenticated user.
+ *
+ * @param request - The incoming request containing the game payload
+ * @param request.body.code - The game code (e.g. GameCode.Blackjack)
+ * @param request.body.key - The current game session key
+ * @param request.body.data.sessionCode - Encrypted action data for the game update
+ * @returns The updated game object, or an error response
+ */
 export const PATCH = withApiAuth(
   async (
     request: NextRequest,
@@ -50,6 +60,15 @@ export const PATCH = withApiAuth(
   },
 );
 
+/**
+ * POST /api/games
+ * Creates a new active game for the authenticated user.
+ *
+ * @param request - The incoming request containing the game payload
+ * @param request.body.code - The game code (e.g. GameCode.Blackjack)
+ * @param request.body.data.sessionKey - Encrypted session key for the new game (e.g. encrypted bet)
+ * @returns The created game object with its session key, or an error response
+ */
 export const POST = withApiAuth(
   async (
     request: NextRequest,

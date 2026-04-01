@@ -1,6 +1,15 @@
 import { User } from '@parthenonlab/types';
 import { UserModel } from '@parthenonlab/models';
 
+/**
+ * Attempts to merge a Twitch user document into an existing Discord user account.
+ * If the Discord user already has a linked Twitch ID, returns the existing record unchanged.
+ * If both accounts exist separately, combines their balances, updates the Discord document, and deletes the Twitch document.
+ *
+ * @param payload.discord_id - The Discord user ID
+ * @param payload.twitch_id - The Twitch user ID to merge into the Discord account
+ * @returns The merged or existing user, or null if neither account was found
+ */
 export const attemptUserMerge = async (payload: {
   discord_id: string;
   twitch_id: string;
@@ -32,6 +41,13 @@ export const attemptUserMerge = async (payload: {
   return discordData ?? twitchData ?? null;
 };
 
+/**
+ * Fetches a user by their Discord or Twitch ID.
+ *
+ * @param id - The user ID to look up
+ * @param method - Whether to query by "discord" or "twitch" ID
+ * @returns The User object, or null if not found
+ */
 export const getUser = async (
   id: string,
   method: 'discord' | 'twitch'

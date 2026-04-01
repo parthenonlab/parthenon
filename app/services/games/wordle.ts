@@ -11,6 +11,17 @@ import { GameModel } from '@/models/game';
 import { StatModel } from '@/models/stat';
 import { UserModel } from '@parthenonlab/models';
 
+/**
+ * Handles the server-side outcome of a Wordle guess.
+ * On a win, deletes the game document then updates stats and credits the reward.
+ * On an ongoing attempt, updates the guesses list.
+ * On the final failed attempt, resets the streak, updates stats, and deletes the game document.
+ *
+ * @param game - The current game document from the database
+ * @param discordId - The authenticated user's Discord ID
+ * @param payload - The update payload containing the encrypted session code (the guessed word)
+ * @returns A new session key, or null on failure
+ */
 export const updateWordleGame = async (
   game: GameObject,
   discordId: string,

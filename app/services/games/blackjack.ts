@@ -9,6 +9,16 @@ import { GameModel } from '@/models/game';
 import { StatModel } from '@/models/stat';
 import { UserModel } from '@parthenonlab/models';
 
+/**
+ * Handles the server-side outcome of a Blackjack game.
+ * Decrypts the game status, calculates the cash delta based on the outcome and whether the player doubled,
+ * updates stats, deletes the game document, then credits or debits the user's balance.
+ *
+ * @param game - The current game document from the database
+ * @param discordId - The authenticated user's Discord ID
+ * @param payload - The update payload containing the encrypted session code
+ * @returns A new session key, or null on failure
+ */
 export const updateBlackjackGame = async (
   game: GameObject,
   discordId: string,

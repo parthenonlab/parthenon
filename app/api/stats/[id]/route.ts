@@ -4,6 +4,14 @@ import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
 import { getStats } from '@/services/stat';
 
+/**
+ * GET /api/stats/:id
+ * Returns the stats document for a given Discord user.
+ *
+ * @param _request - The incoming request (unused)
+ * @param context.params.id - The Discord user ID to fetch stats for
+ * @returns The stats object, or an error response
+ */
 export const GET = withApiAuth(
   async (
     _request: NextRequest,

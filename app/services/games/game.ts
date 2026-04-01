@@ -10,6 +10,11 @@ import { updateBlackjackGame } from './blackjack';
 import { updateWordleGame } from './wordle';
 import { UserModel } from '@parthenonlab/models';
 
+/**
+ * Retrieves the Discord provider user ID for the currently authenticated Clerk user.
+ *
+ * @returns The Discord user ID, or undefined if not authenticated or no Discord account is linked
+ */
 const getDiscordId = async () => {
   const user = await currentUser();
 
@@ -21,8 +26,12 @@ const getDiscordId = async () => {
 };
 
 /**
- * createActiveGame
- * This creates a new Game Document
+ * Creates a new active game for the authenticated user.
+ * For Blackjack, validates the bet and deducts it from the user's balance after the game document is written.
+ * For Wordle, decrypts and stores the answer.
+ *
+ * @param payload - The game payload; must include code and data.sessionKey
+ * @returns The new game's session key, or null if unauthenticated, the bet is invalid, or the user has insufficient funds
  */
 export const createActiveGame = async (
   payload: Partial<GameObject>
@@ -76,9 +85,11 @@ export const createActiveGame = async (
 };
 
 /**
- * deleteActiveGame
- * This deletes Game document by Discord ID
- * @returns The deleted Game document or NULL
+ * Deletes an active game document by Discord ID and game code.
+ *
+ * @param id - The Discord user ID
+ * @param code - The game code identifying which game to delete
+ * @returns The deleted game's session key, or null if no matching game was found
  */
 export const deleteActiveGame = async (
   id: string,
@@ -91,9 +102,10 @@ export const deleteActiveGame = async (
 };
 
 /**
- * getActiveGames
- * This fetches Game documents by Discord ID
- * @returns The Game documents or NULL
+ * Fetches all active game documents for a given Discord user.
+ *
+ * @param id - The Discord user ID
+ * @returns An array of GameObject records
  */
 export const getActiveGames = async (
   id: string
@@ -103,8 +115,11 @@ export const getActiveGames = async (
 };
 
 /**
- * updateActiveGame
- * This updates a Game Document
+ * Updates an active game for the authenticated user.
+ * Validates the session key before delegating to the game-specific update handler.
+ *
+ * @param payload - The game payload; must include code, key, and data.sessionCode
+ * @returns The updated game's new session key, or null if unauthenticated, the game is not found, or the key is invalid
  */
 export const updateActiveGame = async (
   payload: GameObject

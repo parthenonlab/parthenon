@@ -5,6 +5,14 @@ import { withApiAuth } from '@/lib/server';
 import { deleteActiveGame, getActiveGames } from '@/services/games';
 import { GameCode } from '@/enums/games';
 
+/**
+ * GET /api/games/:id
+ * Returns all active games for a given Discord user.
+ *
+ * @param _request - The incoming request (unused)
+ * @param context.params.id - The Discord user ID to fetch games for
+ * @returns An array of active game objects, or an error response
+ */
 export const GET = withApiAuth(
   async (
     _request: NextRequest,
@@ -34,6 +42,15 @@ export const GET = withApiAuth(
   },
 );
 
+/**
+ * DELETE /api/games/:id?code=
+ * Deletes an active game for a given Discord user.
+ *
+ * @param request - The incoming request
+ * @param request.url - Must include query param `code` (GameCode)
+ * @param context.params.id - The Discord user ID whose game should be deleted
+ * @returns The deleted game object, or an error response
+ */
 export const DELETE = withApiAuth(
   async (
     request: NextRequest,

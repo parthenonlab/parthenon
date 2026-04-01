@@ -2,6 +2,14 @@ import { GameCode } from '@/enums/games';
 import { ParthenonAction, ParthenonState } from '@/interfaces/context';
 import { GameObject } from '@/interfaces/games';
 
+/**
+ * Reducer for global Parthenon app state.
+ * Handles active games, modal visibility, stats, and the current user.
+ *
+ * @param state - The current app state
+ * @param action - The dispatched action
+ * @returns The next app state
+ */
 export const parthenonReducer = (
   state: ParthenonState,
   action: ParthenonAction

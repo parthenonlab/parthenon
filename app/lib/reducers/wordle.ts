@@ -10,11 +10,26 @@ import {
 import { WordleKeyStatus, WordleStatus } from '@/enums/games';
 import { WordleAction, WordleGuess, WordleState } from '@/interfaces/games';
 
+/**
+ * Picks a random word from the answer list to use as the Wordle answer.
+ *
+ * @returns A randomly selected answer word
+ */
 const generateAnswer = () => {
   const i = Math.floor(Math.random() * ANSWER_LIST.length);
   return ANSWER_LIST[i];
 };
 
+/**
+ * Evaluates a guess against the answer using two-pass Wordle logic.
+ * First pass marks exact matches (Correct), second pass marks letters present
+ * but in the wrong position (Present). Also updates keyboard tile colors.
+ *
+ * @param guess - The guessed word as an array of letters
+ * @param answer - The target answer word
+ * @param keyResults - The current keyboard letter statuses (mutated in place)
+ * @returns An array of WordleKeyStatus values, one per letter in the guess
+ */
 const getLetterResult = (
   guess: string[],
   answer: string,
@@ -65,6 +80,14 @@ const getLetterResult = (
   return result;
 };
 
+/**
+ * Reducer for Wordle game state.
+ * Handles starting a game, typing letters, deleting, submitting guesses, and resetting.
+ *
+ * @param state - The current Wordle state
+ * @param action - The dispatched action
+ * @returns The next Wordle state
+ */
 export const wordleReducer = (
   state: WordleState,
   action: WordleAction
