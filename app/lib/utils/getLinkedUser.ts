@@ -1,4 +1,4 @@
-import type { ExternalAccountResource } from '@clerk/types';
+import type { ExternalAccountResource } from '@clerk/shared/types';
 import { User } from '@parthenonlab/types';
 import { API_URLS } from '@/constants/api';
 
