@@ -3,6 +3,13 @@ import { BlackjackStatus } from '@/enums/games';
 import { PlayCard, BlackjackState, BlackjackAction } from '@/interfaces/games';
 import { drawCard, getHandValue } from '@/lib/utils/cards';
 
+/**
+ * Draws cards for the dealer until the hand value reaches 17 or more.
+ *
+ * @param deck - The current deck (mutated in place)
+ * @param hand - The dealer's current hand
+ * @returns The dealer's final hand
+ */
 const dealerPlay = (deck: PlayCard[], hand: PlayCard[]) => {
   let dealerHand = [...hand];
   let dealerTotal = getHandValue(dealerHand);
@@ -16,6 +23,14 @@ const dealerPlay = (deck: PlayCard[], hand: PlayCard[]) => {
   return dealerHand;
 };
 
+/**
+ * Derives the current game status from the player and dealer hands.
+ *
+ * @param playerHand - The player's current hand
+ * @param dealerHand - The dealer's current hand
+ * @param isWinPending - Whether the game is already in WinPending state (skips re-entering it)
+ * @returns The resolved BlackjackStatus
+ */
 const checkStatus = (
   playerHand: PlayCard[],
   dealerHand: PlayCard[],
@@ -53,6 +68,14 @@ const checkStatus = (
   return status;
 };
 
+/**
+ * Reducer for Blackjack game state.
+ * Handles betting, dealing, hitting, standing, doubling down, and resetting.
+ *
+ * @param state - The current Blackjack state
+ * @param action - The dispatched action
+ * @returns The next Blackjack state
+ */
 export const blackjackReducer = (
   state: BlackjackState,
   action: BlackjackAction

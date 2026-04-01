@@ -16,6 +16,13 @@ if (!encryptionKey || encryptionKey.length === 0) {
 
 const key = Uint8Array.from(Buffer.from(encryptionKey, 'hex'));
 
+/**
+ * Encrypts a string using AES-256-CBC with a random IV.
+ * Returns a colon-separated string of `<iv>:<ciphertext>` in hex.
+ *
+ * @param value - The plaintext string to encrypt
+ * @returns The encrypted string in `iv:ciphertext` hex format
+ */
 export const encrypt = (value: string): string => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(algorithm, key, Uint8Array.from(iv));
@@ -26,6 +33,14 @@ export const encrypt = (value: string): string => {
   return `${iv.toString('hex')}:${encrypted}`;
 };
 
+/**
+ * Decrypts a string produced by `encrypt`.
+ * Expects a colon-separated `<iv>:<ciphertext>` hex string.
+ *
+ * @param encryptedText - The encrypted string in `iv:ciphertext` hex format
+ * @returns The original plaintext string
+ * @throws {DecryptionError} If the input is malformed or decryption fails
+ */
 export const decrypt = (encryptedText: string): string => {
   try {
     const [ivHex, encrypted] = encryptedText.split(':');

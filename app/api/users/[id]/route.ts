@@ -6,7 +6,13 @@ import { withApiAuth } from '@/lib/server';
 import { getUser } from '@/services/user';
 
 /**
- * GET /api/users/:id
+ * GET /api/users/:id?method=
+ * Returns a user by Discord or Twitch ID.
+ *
+ * @param request - The incoming request
+ * @param request.url - Accepts optional query param `method` ("discord" | "twitch"); defaults to "discord"
+ * @param context.params.id - The user ID to look up (Discord ID or Twitch ID depending on method)
+ * @returns The user object, or an error response
  */
 export const GET = withApiAuth(
   async (
