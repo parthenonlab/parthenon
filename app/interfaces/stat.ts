@@ -14,7 +14,3 @@ export interface StatObject {
   [GameCode.Blackjack]?: BlackjackStats;
   [GameCode.Wordle]?: WordleStats;
 }
-
-export interface LeanStatDocument extends StatObject {
-  _id: string;
-}

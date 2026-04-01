@@ -24,7 +24,19 @@ const gameSchema = new Schema<GameDocument>(
       },
     },
   },
-  { collection: MONGODB_COLLECTION_GAMES, versionKey: false }
+  {
+    collection: MONGODB_COLLECTION_GAMES,
+    versionKey: false,
+    toObject: {
+      transform: (_doc: unknown, ret: Record<string, unknown>) => {
+        delete ret._id;
+        return ret;
+      },
+    },
+  },
 );
+
+gameSchema.index({ discord_id: 1, code: 1 });
+gameSchema.index({ discord_id: 1, key: 1 });
 
 export const GameModel = models.Game || model<GameDocument>('Game', gameSchema);

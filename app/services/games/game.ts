@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { currentUser } from '@clerk/nextjs/server';
 
 import { GameCode } from '@/enums/games';
-import { GameObject, LeanGameDocument } from '@/interfaces/games';
+import { GameObject } from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 import { GameModel } from '@/models/game';
 
@@ -17,7 +17,7 @@ const getDiscordId = async () => {
     account => account.provider === 'oauth_discord'
   );
 
-  return discordAccount?.externalId;
+  return discordAccount?.providerUserId;
 };
 
 /**
@@ -30,11 +30,6 @@ export const createActiveGame = async (
   const discordId = await getDiscordId();
   if (!discordId) return null;
 
-  await GameModel.findOneAndDelete({
-    discord_id: discordId,
-    code: payload.code,
-  });
-
   const updatedKey = uuidv4();
   const sessionKey = payload.data!.sessionKey as string;
 
@@ -44,16 +39,16 @@ export const createActiveGame = async (
     const betString = decrypt(sessionKey);
     const bet = parseInt(betString, 10);
 
+    if (isNaN(bet) || bet <= 0) return null;
+
+    const user = await UserModel.findOne({ discord_id: discordId });
+    if (!user || user.cash < bet) return null;
+
     gameData = {
       data: {
         bet,
       },
     };
-
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: -bet } }
-    );
   } else if (payload.code === GameCode.Wordle) {
     gameData = {
       data: {
@@ -63,12 +58,19 @@ export const createActiveGame = async (
     };
   }
 
-  await GameModel.create({
-    discord_id: discordId,
-    key: updatedKey,
-    code: payload.code,
-    ...gameData,
-  });
+  await GameModel.findOneAndReplace(
+    { discord_id: discordId, code: payload.code },
+    { discord_id: discordId, key: updatedKey, code: payload.code, ...gameData },
+    { upsert: true }
+  );
+
+  if (payload.code === GameCode.Blackjack) {
+    const bet = (gameData.data as { bet: number }).bet;
+    await UserModel.findOneAndUpdate(
+      { discord_id: discordId },
+      { $inc: { cash: -bet } }
+    );
+  }
 
   return { key: updatedKey };
 };
@@ -82,13 +84,10 @@ export const deleteActiveGame = async (
   id: string,
   code: GameCode
 ): Promise<Partial<GameObject> | null> => {
-  const game = await GameModel.findOneAndDelete({
-    discord_id: id,
-    code,
-  }).lean<LeanGameDocument>();
+  const game = await GameModel.findOneAndDelete({ discord_id: id, code });
 
-  const { _id, ...rest } = game as LeanGameDocument;
-  return { key: rest.key };
+  if (!game) return null;
+  return { key: game.key };
 };
 
 /**
@@ -99,16 +98,8 @@ export const deleteActiveGame = async (
 export const getActiveGames = async (
   id: string
 ): Promise<GameObject[] | null> => {
-  const games = await GameModel.find({
-    discord_id: id,
-  }).lean<LeanGameDocument[]>();
-
-  const activeGames = games.map((game: GameObject) => {
-    const { _id, ...rest } = game as LeanGameDocument;
-    return rest;
-  });
-
-  return activeGames;
+  const games = await GameModel.find({ discord_id: id });
+  return games.map(game => game.toObject() as GameObject);
 };
 
 /**
@@ -121,20 +112,17 @@ export const updateActiveGame = async (
   const discordId = await getDiscordId();
   if (!discordId) return null;
 
-  const game = await GameModel.findOne({
-    discord_id: discordId,
-    code: payload.code,
-  }).lean<LeanGameDocument>();
+  const game = await GameModel.findOne({ discord_id: discordId, code: payload.code });
 
   if (!game) return null;
   if (game.key !== payload.key) return null;
 
-  const { _id, ...rest } = game as LeanGameDocument;
+  const gameObject = game.toObject() as GameObject;
 
   if (payload.code === GameCode.Blackjack) {
-    return updateBlackjackGame(rest, discordId, payload);
+    return updateBlackjackGame(gameObject, discordId, payload);
   } else if (payload.code === GameCode.Wordle) {
-    return updateWordleGame(rest, discordId, payload);
+    return updateWordleGame(gameObject, discordId, payload);
   } else {
     return null;
   }

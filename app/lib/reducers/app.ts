@@ -2,7 +2,7 @@ import { GameCode } from '@/enums/games';
 import { ParthenonAction, ParthenonState } from '@/interfaces/context';
 import { GameObject } from '@/interfaces/games';
 
-export const partheonReducer = (
+export const parthenonReducer = (
   state: ParthenonState,
   action: ParthenonAction
 ): ParthenonState => {

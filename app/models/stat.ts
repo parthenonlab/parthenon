@@ -21,7 +21,16 @@ const statSchema = new Schema<StatDocument>(
       totalWon: Number,
     },
   },
-  { collection: MONGODB_COLLECTION_STATS, versionKey: false }
+  {
+    collection: MONGODB_COLLECTION_STATS,
+    versionKey: false,
+    toObject: {
+      transform: (_doc: unknown, ret: Record<string, unknown>) => {
+        delete ret._id;
+        return ret;
+      },
+    },
+  }
 );
 
 export const StatModel = models.Stat || model<StatDocument>('Stat', statSchema);

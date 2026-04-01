@@ -81,9 +81,9 @@ const Wordle = () => {
       });
 
       if (game) gameKeyRef.current = game.key;
-      setStateActiveGame(GameCode.Blackjack, game);
+      setStateActiveGame(GameCode.Wordle, game);
     },
-    [fetchPatch, setStateActiveGame]
+    [fetchPatch, setStateActiveGame],
   );
 
   const modifiedEnter = useCallback(async () => {
@@ -105,19 +105,22 @@ const Wordle = () => {
     updateGame(currentGuessRef.current);
   }, [onEnter, onPlay, updateGame]);
 
-  const handleKeyPress = (event: KeyboardEvent) => {
-    event.preventDefault();
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      event.preventDefault();
 
-    const { key } = event;
+      const { key } = event;
 
-    if (key === 'Enter') {
-      modifiedEnter();
-    } else if (key === 'Backspace') {
-      onDelete();
-    } else if (/^[a-zA-Z]$/.test(key)) {
-      onKey(key.toLowerCase());
-    }
-  };
+      if (key === 'Enter') {
+        modifiedEnter();
+      } else if (key === 'Backspace') {
+        onDelete();
+      } else if (/^[a-zA-Z]$/.test(key)) {
+        onKey(key.toLowerCase());
+      }
+    },
+    [modifiedEnter, onDelete, onKey],
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
@@ -125,7 +128,7 @@ const Wordle = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, []);
+  }, [handleKeyPress]);
 
   useEffect(() => {
     if (answer.length === 0 || answer === answerRef.current) return;
@@ -164,7 +167,7 @@ const Wordle = () => {
           distribution: newDistribution,
           maxStreak: Math.max(
             stats[GameCode.Wordle].maxStreak,
-            stats[GameCode.Wordle].currentStreak + 1
+            stats[GameCode.Wordle].currentStreak + 1,
           ),
           totalPlayed: stats[GameCode.Wordle].totalPlayed + 1,
           totalWon: stats[GameCode.Wordle].totalWon + 1,

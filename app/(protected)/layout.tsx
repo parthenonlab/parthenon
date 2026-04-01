@@ -71,16 +71,16 @@ const ProtectedLayout = ({
   const fetchUser = useCallback(async () => {
     if (!userClerk) return;
 
-    const attemptMerge = async () => {
+    try {
       const data = await getLinkedUser(
         userClerk.externalAccounts,
         fetchGet,
         fetchPost
       );
       setStateUser(data);
-    };
-
-    attemptMerge();
+    } catch {
+      setStateUser(null);
+    }
   }, [fetchGet, fetchPost, setStateUser, userClerk]);
 
   useEffect(() => {

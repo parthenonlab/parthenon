@@ -38,12 +38,12 @@ export const GameTable = ({
   dealerLastHand: PlayCard[];
   dealerHand: PlayCard[];
   double: boolean;
-  getGame: Function;
+  getGame: () => void;
   playerLastHand: PlayCard[];
   playerHand: PlayCard[];
   status: BlackjackStatus;
-  setDealerLastHand: Function;
-  setPlayerLastHand: Function;
+  setDealerLastHand: (hand: PlayCard[]) => void;
+  setPlayerLastHand: (hand: PlayCard[]) => void;
   onBetChange: (bet: number | null) => void;
   onDouble: () => void;
   onHit: () => void;
@@ -57,18 +57,18 @@ export const GameTable = ({
 
   const [animation, setAnimation] = useState(BlackjackAnimation.Done);
 
-  const handleDouble = useCallback(async () => {
-    await setAnimation(BlackjackAnimation.Standby);
+  const handleDouble = useCallback(() => {
+    setAnimation(BlackjackAnimation.Standby);
     onDouble();
   }, [onDouble]);
 
-  const handleHit = useCallback(async () => {
-    await setAnimation(BlackjackAnimation.Standby);
+  const handleHit = useCallback(() => {
+    setAnimation(BlackjackAnimation.Standby);
     onHit();
   }, [onHit]);
 
-  const handleStand = useCallback(async () => {
-    await setAnimation(BlackjackAnimation.Standby);
+  const handleStand = useCallback(() => {
+    setAnimation(BlackjackAnimation.Standby);
     onStand();
   }, [onStand]);
 
@@ -112,7 +112,7 @@ export const GameTable = ({
         else setPlayerTotal(updatedTotal);
       }
     },
-    [dealerLastHand, playerLastHand]
+    [dealerLastHand, playerLastHand],
   );
 
   useEffect(() => {
@@ -147,7 +147,7 @@ export const GameTable = ({
           if (playerDelta) {
             await animateCards(
               'player',
-              playerHand.slice(playerLastHand.length)
+              playerHand.slice(playerLastHand.length),
             );
             setPlayerLastHand(playerHand);
           }

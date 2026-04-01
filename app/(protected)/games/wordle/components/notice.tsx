@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 import { WordleStatus } from '@/enums/games';
 import { SilverIcon } from '@/images/icons';
 
@@ -18,12 +20,15 @@ export const Notice = ({
   reward,
   onResume,
 }: NoticeProps) => {
-  if (
-    status === WordleStatus.InvalidGuess ||
-    status === WordleStatus.InvalidWord
-  ) {
-    setTimeout(onResume, 750);
-  }
+  useEffect(() => {
+    if (
+      status === WordleStatus.InvalidGuess ||
+      status === WordleStatus.InvalidWord
+    ) {
+      const timer = setTimeout(onResume, 750);
+      return () => clearTimeout(timer);
+    }
+  }, [status, onResume]);
 
   return (
     <div className={styles.container}>
