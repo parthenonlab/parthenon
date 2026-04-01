@@ -16,7 +16,3 @@ export interface GameObject {
   key?: string;
   data: GameData;
 }
-
-export interface LeanGameDocument extends GameObject {
-  _id: string;
-}

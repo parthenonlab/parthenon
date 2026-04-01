@@ -38,31 +38,28 @@ export const updateWordleGame = async (
     const newDistribution = [...stats.distribution];
     newDistribution[newGuesses.length - 1] += 1;
 
-    await StatModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Wordle]: {
-            currentStreak: stats.currentStreak + 1,
-            distribution: newDistribution,
-            maxStreak: Math.max(stats.maxStreak, stats.currentStreak + 1),
-            totalPlayed: stats.totalPlayed + 1,
-            totalWon: stats.totalWon + 1,
+    await Promise.all([
+      StatModel.findOneAndUpdate(
+        { discord_id: discordId },
+        {
+          $set: {
+            [GameCode.Wordle]: {
+              currentStreak: stats.currentStreak + 1,
+              distribution: newDistribution,
+              maxStreak: Math.max(stats.maxStreak, stats.currentStreak + 1),
+              totalPlayed: stats.totalPlayed + 1,
+              totalWon: stats.totalWon + 1,
+            },
           },
         },
-      },
-      { upsert: true }
-    );
-
-    await GameModel.findOneAndDelete({
-      discord_id: discordId,
-      key: game.key,
-    });
-
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: WORDLE_REWARDS[newGuesses.length - 1] } }
-    );
+        { upsert: true }
+      ),
+      GameModel.findOneAndDelete({ discord_id: discordId, key: game.key }),
+      UserModel.findOneAndUpdate(
+        { discord_id: discordId },
+        { $inc: { cash: WORDLE_REWARDS[newGuesses.length - 1] } }
+      ),
+    ]);
   } else if (isAttempt) {
     await GameModel.findOneAndUpdate(
       { discord_id: discordId, code: GameCode.Wordle },

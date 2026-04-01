@@ -1,5 +1,5 @@
 import { GameCode } from '@/enums/games';
-import { LeanStatDocument, StatObject } from '@/interfaces/stat';
+import { StatObject } from '@/interfaces/stat';
 import { StatModel } from '@/models/stat';
 
 /**
@@ -7,10 +7,8 @@ import { StatModel } from '@/models/stat';
  * This creates a new Stat Document
  */
 export const createStats = async (payload: StatObject): Promise<StatObject> => {
-  const stats = (await StatModel.create(payload)).toObject();
-  const { _id, ...rest } = stats as LeanStatDocument;
-
-  return rest;
+  const stats = await StatModel.create(payload);
+  return stats.toObject() as StatObject;
 };
 
 /**
@@ -19,14 +17,10 @@ export const createStats = async (payload: StatObject): Promise<StatObject> => {
  * @returns The Stat documents or NULL
  */
 export const getStats = async (id: string): Promise<StatObject | null> => {
-  const stats = await StatModel.findOne({
-    discord_id: id,
-  }).lean<LeanStatDocument>();
+  const stats = await StatModel.findOne({ discord_id: id });
 
   if (!stats) return null;
-
-  const { _id, ...rest } = stats as LeanStatDocument;
-  return rest;
+  return stats.toObject() as StatObject;
 };
 
 /**
@@ -41,10 +35,8 @@ export const updateStats = async (
     { discord_id: payload.discord_id, code: code },
     { ...payload },
     { new: true }
-  ).lean<LeanStatDocument>();
+  );
 
   if (!stats) return null;
-
-  const { _id, ...rest } = stats as LeanStatDocument;
-  return rest;
+  return stats.toObject() as StatObject;
 };

@@ -72,22 +72,11 @@ export const updateBlackjackGame = async (
     );
   } else if (status === BlackjackStatus.Push) {
     cashDelta = bet;
-
-    await StatModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalPlayed: stats.totalPlayed + 1,
-          },
-        },
-      },
-      { upsert: true }
-    );
   } else {
     if (isDouble) cashDelta = -bet;
+  }
 
+  if (status === BlackjackStatus.Push || status === BlackjackStatus.Lose || status === BlackjackStatus.Bust) {
     await StatModel.findOneAndUpdate(
       { discord_id: discordId },
       {
@@ -102,17 +91,12 @@ export const updateBlackjackGame = async (
     );
   }
 
-  await GameModel.findOneAndDelete({
-    discord_id: discordId,
-    key: game.key,
-  });
-
-  if (cashDelta !== 0) {
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: cashDelta } }
-    );
-  }
+  await Promise.all([
+    GameModel.findOneAndDelete({ discord_id: discordId, key: game.key }),
+    cashDelta !== 0
+      ? UserModel.findOneAndUpdate({ discord_id: discordId }, { $inc: { cash: cashDelta } })
+      : Promise.resolve(),
+  ]);
 
   return { key: updatedKey };
 };
