@@ -105,19 +105,22 @@ const Wordle = () => {
     updateGame(currentGuessRef.current);
   }, [onEnter, onPlay, updateGame]);
 
-  const handleKeyPress = (event: KeyboardEvent) => {
-    event.preventDefault();
+  const handleKeyPress = useCallback(
+    (event: KeyboardEvent) => {
+      event.preventDefault();
 
-    const { key } = event;
+      const { key } = event;
 
-    if (key === 'Enter') {
-      modifiedEnter();
-    } else if (key === 'Backspace') {
-      onDelete();
-    } else if (/^[a-zA-Z]$/.test(key)) {
-      onKey(key.toLowerCase());
-    }
-  };
+      if (key === 'Enter') {
+        modifiedEnter();
+      } else if (key === 'Backspace') {
+        onDelete();
+      } else if (/^[a-zA-Z]$/.test(key)) {
+        onKey(key.toLowerCase());
+      }
+    },
+    [modifiedEnter, onDelete, onKey]
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress);
@@ -125,7 +128,7 @@ const Wordle = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, []);
+  }, [handleKeyPress]);
 
   useEffect(() => {
     if (answer.length === 0 || answer === answerRef.current) return;
