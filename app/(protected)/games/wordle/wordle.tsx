@@ -81,9 +81,9 @@ const Wordle = () => {
       });
 
       if (game) gameKeyRef.current = game.key;
-      setStateActiveGame(GameCode.Blackjack, game);
+      setStateActiveGame(GameCode.Wordle, game);
     },
-    [fetchPatch, setStateActiveGame]
+    [fetchPatch, setStateActiveGame],
   );
 
   const modifiedEnter = useCallback(async () => {
@@ -119,7 +119,7 @@ const Wordle = () => {
         onKey(key.toLowerCase());
       }
     },
-    [modifiedEnter, onDelete, onKey]
+    [modifiedEnter, onDelete, onKey],
   );
 
   useEffect(() => {
@@ -167,7 +167,7 @@ const Wordle = () => {
           distribution: newDistribution,
           maxStreak: Math.max(
             stats[GameCode.Wordle].maxStreak,
-            stats[GameCode.Wordle].currentStreak + 1
+            stats[GameCode.Wordle].currentStreak + 1,
           ),
           totalPlayed: stats[GameCode.Wordle].totalPlayed + 1,
           totalWon: stats[GameCode.Wordle].totalWon + 1,
