@@ -12,7 +12,7 @@ import { useBlackjack, useFetch, useParthenon } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
 import { encrypt } from '@/lib/utils/encryption';
 
-import { BlackjackStats, GameObject } from '@/interfaces/games';
+import { BlackjackStats, GameObject, PlayCard } from '@/interfaces/games';
 import { User } from '@parthenonlab/types';
 
 import { Loading } from '@/components';
@@ -52,8 +52,8 @@ const Blackjack = () => {
 
   const [page, setPage] = useState(GamePage.Overview);
 
-  const [dealerLastHand, setDealerLastHand] = useState([]);
-  const [playerLastHand, setPlayerLastHand] = useState([]);
+  const [dealerLastHand, setDealerLastHand] = useState<PlayCard[]>([]);
+  const [playerLastHand, setPlayerLastHand] = useState<PlayCard[]>([]);
 
   const betRef = useRef(bet);
   const gameKeyRef = useRef<string | undefined>(null);
@@ -97,7 +97,7 @@ const Blackjack = () => {
         [GameCode.Blackjack]: { ...payload },
       });
     },
-    [stats, setStateStats]
+    [stats, setStateStats],
   );
 
   const updateUser = useCallback(
@@ -105,7 +105,7 @@ const Blackjack = () => {
       if (!user) return;
       setStateUser({ ...user, ...payload });
     },
-    [user, setStateUser]
+    [user, setStateUser],
   );
 
   useEffect(() => {
@@ -119,12 +119,8 @@ const Blackjack = () => {
     gameSavedRef.current = true;
     updateGame();
 
-    const newStats =
-      stats && stats[GameCode.Blackjack]
-        ? stats[GameCode.Blackjack]
-        : INITIAL_BLACKJACK;
-
-    newStats.totalPlayed += 1;
+    const baseStats = stats?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK;
+    const newStats = { ...baseStats, totalPlayed: baseStats.totalPlayed + 1 };
 
     if (status === BlackjackStatus.Blackjack) {
       updateStats({
