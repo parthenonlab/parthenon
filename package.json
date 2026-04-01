@@ -11,7 +11,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.8",
@@ -28,12 +29,15 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/uuid": "^11.0.0",
     "eslint": "^10.1.0",
     "eslint-config-next": "^16.2.2",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
     "sass": "^1.98.0",
     "typescript": "^6.0.2"
   }
