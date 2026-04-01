@@ -38,6 +38,8 @@ export const updateWordleGame = async (
     const newDistribution = [...stats.distribution];
     newDistribution[newGuesses.length - 1] += 1;
 
+    await GameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
+
     await Promise.all([
       StatModel.findOneAndUpdate(
         { discord_id: discordId },
@@ -54,7 +56,6 @@ export const updateWordleGame = async (
         },
         { upsert: true }
       ),
-      GameModel.findOneAndDelete({ discord_id: discordId, key: game.key }),
       UserModel.findOneAndUpdate(
         { discord_id: discordId },
         { $inc: { cash: WORDLE_REWARDS[newGuesses.length - 1] } }

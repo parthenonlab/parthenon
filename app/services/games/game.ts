@@ -39,16 +39,16 @@ export const createActiveGame = async (
     const betString = decrypt(sessionKey);
     const bet = parseInt(betString, 10);
 
+    if (isNaN(bet) || bet <= 0) return null;
+
+    const user = await UserModel.findOne({ discord_id: discordId });
+    if (!user || user.cash < bet) return null;
+
     gameData = {
       data: {
         bet,
       },
     };
-
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: -bet } }
-    );
   } else if (payload.code === GameCode.Wordle) {
     gameData = {
       data: {
@@ -63,6 +63,14 @@ export const createActiveGame = async (
     { discord_id: discordId, key: updatedKey, code: payload.code, ...gameData },
     { upsert: true }
   );
+
+  if (payload.code === GameCode.Blackjack) {
+    const bet = (gameData.data as { bet: number }).bet;
+    await UserModel.findOneAndUpdate(
+      { discord_id: discordId },
+      { $inc: { cash: -bet } }
+    );
+  }
 
   return { key: updatedKey };
 };

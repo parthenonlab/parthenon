@@ -91,12 +91,11 @@ export const updateBlackjackGame = async (
     );
   }
 
-  await Promise.all([
-    GameModel.findOneAndDelete({ discord_id: discordId, key: game.key }),
-    cashDelta !== 0
-      ? UserModel.findOneAndUpdate({ discord_id: discordId }, { $inc: { cash: cashDelta } })
-      : Promise.resolve(),
-  ]);
+  await GameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
+
+  if (cashDelta !== 0) {
+    await UserModel.findOneAndUpdate({ discord_id: discordId }, { $inc: { cash: cashDelta } });
+  }
 
   return { key: updatedKey };
 };

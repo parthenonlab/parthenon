@@ -23,10 +23,8 @@ export const attemptUserMerge = async (payload: {
       cash: discordData.cash + twitchData.cash,
     };
 
-    await Promise.all([
-      UserModel.findOneAndUpdate({ discord_id }, updatedUser),
-      UserModel.findOneAndDelete({ twitch_id }),
-    ]);
+    await UserModel.findOneAndUpdate({ discord_id }, updatedUser);
+    await UserModel.findOneAndDelete({ twitch_id });
 
     return updatedUser;
   }

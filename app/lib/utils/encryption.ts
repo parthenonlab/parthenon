@@ -8,10 +8,10 @@ export class DecryptionError extends Error {
 }
 
 const algorithm = 'aes-256-cbc';
-const encryptionKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
+const encryptionKey = process.env.ENCRYPTION_KEY;
 
 if (!encryptionKey || encryptionKey.length === 0) {
-  throw new Error('NEXT_PUBLIC_ENCRYPTION_KEY environment variable is not set');
+  throw new Error('ENCRYPTION_KEY environment variable is not set');
 }
 
 const key = Uint8Array.from(Buffer.from(encryptionKey, 'hex'));
