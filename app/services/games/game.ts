@@ -17,7 +17,7 @@ const getDiscordId = async () => {
     account => account.provider === 'oauth_discord'
   );
 
-  return discordAccount?.externalId;
+  return discordAccount?.providerUserId;
 };
 
 /**
@@ -29,11 +29,6 @@ export const createActiveGame = async (
 ): Promise<Partial<GameObject> | null> => {
   const discordId = await getDiscordId();
   if (!discordId) return null;
-
-  await GameModel.findOneAndDelete({
-    discord_id: discordId,
-    code: payload.code,
-  });
 
   const updatedKey = uuidv4();
   const sessionKey = payload.data!.sessionKey as string;
@@ -63,12 +58,11 @@ export const createActiveGame = async (
     };
   }
 
-  await GameModel.create({
-    discord_id: discordId,
-    key: updatedKey,
-    code: payload.code,
-    ...gameData,
-  });
+  await GameModel.findOneAndReplace(
+    { discord_id: discordId, code: payload.code },
+    { discord_id: discordId, key: updatedKey, code: payload.code, ...gameData },
+    { upsert: true }
+  );
 
   return { key: updatedKey };
 };

@@ -5,16 +5,39 @@ import { withApiAuth } from '@/lib/server';
 import { attemptUserMerge } from '@/services/user';
 
 export const POST = withApiAuth(
-  async (request: NextRequest, _context: { params: Promise<{}> }) => {
+  async (
+    request: NextRequest,
+    _context: { params: Promise<{}> },
+    _discordId: string,
+  ) => {
     try {
       await connectDatabase();
 
       const payload = await request.json();
+
+      if (
+        typeof payload?.discord_id !== 'string' ||
+        !payload.discord_id ||
+        typeof payload?.twitch_id !== 'string' ||
+        !payload.twitch_id
+      ) {
+        return NextResponse.json(
+          { error: 'discord_id and twitch_id are required' },
+          { status: 400 },
+        );
+      }
+
       const user = await attemptUserMerge(payload);
 
       return NextResponse.json(user);
     } catch (error) {
-      return NextResponse.json({ error }, { status: 500 });
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error ? error.message : 'Internal server error',
+        },
+        { status: 500 },
+      );
     }
   },
 );

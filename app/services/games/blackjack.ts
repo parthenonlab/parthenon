@@ -32,13 +32,10 @@ export const updateBlackjackGame = async (
 
   const stats = userStats?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK;
 
-  if (status === BlackjackStatus.Blackjack) {
-    const reward = isDouble ? bet + bet * 2 : bet + Math.round(bet * 1.5);
+  let cashDelta = 0;
 
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: reward } }
-    );
+  if (status === BlackjackStatus.Blackjack) {
+    cashDelta = isDouble ? bet + bet * 2 : bet + Math.round(bet * 1.5);
 
     await StatModel.findOneAndUpdate(
       { discord_id: discordId },
@@ -58,12 +55,7 @@ export const updateBlackjackGame = async (
     status === BlackjackStatus.Win ||
     status === BlackjackStatus.DealerBust
   ) {
-    const reward = isDouble ? bet + bet * 2 : bet * 2;
-
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: reward } }
-    );
+    cashDelta = isDouble ? bet + bet * 2 : bet * 2;
 
     await StatModel.findOneAndUpdate(
       { discord_id: discordId },
@@ -79,10 +71,7 @@ export const updateBlackjackGame = async (
       { upsert: true }
     );
   } else if (status === BlackjackStatus.Push) {
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: bet } }
-    );
+    cashDelta = bet;
 
     await StatModel.findOneAndUpdate(
       { discord_id: discordId },
@@ -97,12 +86,7 @@ export const updateBlackjackGame = async (
       { upsert: true }
     );
   } else {
-    if (isDouble) {
-      await UserModel.findOneAndUpdate(
-        { discord_id: discordId },
-        { $inc: { cash: -bet } }
-      );
-    }
+    if (isDouble) cashDelta = -bet;
 
     await StatModel.findOneAndUpdate(
       { discord_id: discordId },
@@ -122,6 +106,13 @@ export const updateBlackjackGame = async (
     discord_id: discordId,
     key: game.key,
   });
+
+  if (cashDelta !== 0) {
+    await UserModel.findOneAndUpdate(
+      { discord_id: discordId },
+      { $inc: { cash: cashDelta } }
+    );
+  }
 
   return { key: updatedKey };
 };

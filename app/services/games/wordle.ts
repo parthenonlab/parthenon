@@ -38,11 +38,6 @@ export const updateWordleGame = async (
     const newDistribution = [...stats.distribution];
     newDistribution[newGuesses.length - 1] += 1;
 
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: WORDLE_REWARDS[newGuesses.length - 1] } }
-    );
-
     await StatModel.findOneAndUpdate(
       { discord_id: discordId },
       {
@@ -63,6 +58,11 @@ export const updateWordleGame = async (
       discord_id: discordId,
       key: game.key,
     });
+
+    await UserModel.findOneAndUpdate(
+      { discord_id: discordId },
+      { $inc: { cash: WORDLE_REWARDS[newGuesses.length - 1] } }
+    );
   } else if (isAttempt) {
     await GameModel.findOneAndUpdate(
       { discord_id: discordId, code: GameCode.Wordle },
