@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 
-import { UserAuthMethod } from '@/interfaces/user';
-
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
 
@@ -18,7 +16,7 @@ export const GET = withApiAuth(
 
     try {
       await connectDatabase();
-      const data = await getUser(id, method as UserAuthMethod);
+      const data = await getUser(id, method as 'discord' | 'twitch');
 
       return NextResponse.json(data);
     } catch (error) {

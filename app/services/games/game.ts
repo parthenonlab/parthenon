@@ -8,7 +8,7 @@ import { GameModel } from '@/models/game';
 
 import { updateBlackjackGame } from './blackjack';
 import { updateWordleGame } from './wordle';
-import { UserModel } from '@/models/user';
+import { UserModel } from '@parthenonlab/models';
 
 const getDiscordId = async () => {
   const user = await currentUser();
