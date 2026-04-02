@@ -1,84 +1,17 @@
-@use '@/styles/variables' as *;
+@use '@/styles/legal' as *;
 
 .terms {
-  margin: 0 auto;
-  max-width: 900px;
+  @include legal-page;
 }
 
 .headline {
-  padding-bottom: 17px;
-
-  @media screen and (min-width: $tablet-width) {
-    padding-bottom: 25px;
-  }
-
-  p {
-    font-size: 14px;
-    margin-top: 5px;
-
-    @media screen and (min-width: $tablet-width) {
-      font-size: 16px;
-    }
-  }
+  @include legal-headline;
 }
 
 .sections {
-  border-bottom: 1px solid var(--divider);
-  border-top: 1px solid var(--divider);
-  list-style-type: none;
-  padding: 25px 5px;
-  text-align: left;
-
-  @media screen and (min-width: $tablet-width) {
-    padding: 45px;
-  }
-
-  & > li {
-    margin-top: 15px;
-
-    @media screen and (min-width: $tablet-width) {
-      margin-top: 25px;
-    }
-  }
-
-  & > li:first-child {
-    margin-top: 0;
-  }
-
-  h2 {
-    color: var(--text-headline);
-    font-size: 16px;
-
-    @media screen and (min-width: $tablet-width) {
-      font-size: 18px;
-    }
-  }
-
-  p {
-    font-size: 14px;
-    line-height: 1.25;
-    margin-top: 5px;
-
-    @media screen and (min-width: $tablet-width) {
-      font-size: 16px;
-      line-height: 1.45;
-      margin-top: 10px;
-    }
-  }
-
-  a {
-    color: var(--text-secondary);
-    text-decoration: underline;
-  }
+  @include legal-sections;
 }
 
 .list {
-  list-style-type: disc;
-  margin-top: 10px;
-  padding-left: 17px;
-
-  @media screen and (min-width: $tablet-width) {
-    margin-top: 17px;
-    padding-left: 20px;
-  }
+  @include legal-list;
 }
