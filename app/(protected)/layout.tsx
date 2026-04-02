@@ -6,7 +6,7 @@ import { useUser } from '@clerk/nextjs';
 
 import { API_URLS } from '@/constants/api';
 
-import { Header, Modal } from '@/components';
+import { Header } from '@/components';
 import { useFetch, useParthenon } from '@/hooks';
 import { getLinkedUser } from '@/lib/utils';
 
@@ -26,7 +26,6 @@ const ProtectedLayout = ({
     activeGames,
     isActiveGamesFetched,
     isUserFetched,
-    modal,
     setStateActiveGames,
     setStateUser,
     user,
@@ -75,7 +74,6 @@ const ProtectedLayout = ({
     <>
       <Header />
       <div className={styles.container}>{children}</div>
-      {modal.isOpen && <Modal />}
     </>
   );
 };
