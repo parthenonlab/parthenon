@@ -1,12 +1,6 @@
 import { BlackjackStatus } from '@/enums/games';
 import { CardDeck, PlayCard } from './cards';
 
-export interface BlackjackStats {
-  totalBlackjack: number;
-  totalPlayed: number;
-  totalWon: number;
-}
-
 export interface BlackjackState {
   bet: number | null;
   deck: CardDeck;

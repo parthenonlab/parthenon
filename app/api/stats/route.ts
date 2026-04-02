@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
-import { createStats, updateStats } from '@/services/stat';
+import { createStats, updateStats } from '@/services/stats';
 import { GameCode } from '@/enums/games';
 
 const validCodes = Object.values(GameCode);

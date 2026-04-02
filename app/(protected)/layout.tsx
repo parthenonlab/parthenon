@@ -5,15 +5,12 @@ import { useCallback, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 import { API_URLS } from '@/constants/api';
-import { INITIAL_BLACKJACK, INITIAL_WORDLE } from '@/constants/stats';
-import { GameCode } from '@/enums/games';
 
 import { Header, Modal } from '@/components';
 import { useFetch, useParthenon } from '@/hooks';
 import { getLinkedUser } from '@/lib/utils';
 
 import { GameObject } from '@/interfaces/games';
-import { StatObject } from '@/interfaces/stat';
 
 import styles from './layout.module.scss';
 
@@ -28,13 +25,10 @@ const ProtectedLayout = ({
   const {
     activeGames,
     isActiveGamesFetched,
-    isStatsFetched,
     isUserFetched,
     modal,
     setStateActiveGames,
-    setStateStats,
     setStateUser,
-    stats,
     user,
   } = useParthenon();
 
@@ -48,24 +42,6 @@ const ProtectedLayout = ({
       setStateActiveGames(games);
     },
     [fetchGetArray, setStateActiveGames]
-  );
-
-  const fetchStats = useCallback(
-    async (discordId: string | null) => {
-      if (!discordId) return;
-
-      const url = `${API_URLS.STATS}/${discordId}`;
-      const stats = await fetchGet<StatObject>(url);
-
-      setStateStats(
-        stats ?? {
-          discord_id: discordId,
-          [GameCode.Blackjack]: INITIAL_BLACKJACK,
-          [GameCode.Wordle]: INITIAL_WORDLE,
-        }
-      );
-    },
-    [fetchGet, setStateStats]
   );
 
   const fetchUser = useCallback(async () => {
@@ -87,11 +63,6 @@ const ProtectedLayout = ({
     if (isUserFetched || !isSignedIn) return;
     if (!user) fetchUser();
   }, [fetchUser, isSignedIn, isUserFetched, user]);
-
-  useEffect(() => {
-    if (!isUserFetched || !user || isStatsFetched) return;
-    if (!stats) fetchStats(user.discord_id);
-  }, [fetchStats, isStatsFetched, isUserFetched, stats, user]);
 
   useEffect(() => {
     if (!isUserFetched || !user || isActiveGamesFetched) return;

@@ -1,5 +1,5 @@
 import { INITIAL_BLACKJACK } from '@/constants/stats';
-import { BlackjackStats } from '@/interfaces/games';
+import { BlackjackStats } from '@parthenonlab/types';
 
 import styles from '../styles/stats.module.scss';
 

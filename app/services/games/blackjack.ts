@@ -6,8 +6,7 @@ import { GameObject } from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
 import { GameModel } from '@/models/game';
-import { StatModel } from '@/models/stat';
-import { UserModel } from '@parthenonlab/models';
+import { StatsModel, UserModel } from '@parthenonlab/models';
 
 /**
  * Handles the server-side outcome of a Blackjack game.
@@ -36,7 +35,7 @@ export const updateBlackjackGame = async (
 
   const bet = parseInt(gameData.bet as string, 10);
 
-  const userStats = await StatModel.findOne({
+  const userStats = await StatsModel.findOne({
     discord_id: discordId,
   });
 
@@ -47,7 +46,7 @@ export const updateBlackjackGame = async (
   if (status === BlackjackStatus.Blackjack) {
     cashDelta = isDouble ? bet + bet * 2 : bet + Math.round(bet * 1.5);
 
-    await StatModel.findOneAndUpdate(
+    await StatsModel.findOneAndUpdate(
       { discord_id: discordId },
       {
         $set: {
@@ -67,7 +66,7 @@ export const updateBlackjackGame = async (
   ) {
     cashDelta = isDouble ? bet + bet * 2 : bet * 2;
 
-    await StatModel.findOneAndUpdate(
+    await StatsModel.findOneAndUpdate(
       { discord_id: discordId },
       {
         $set: {
@@ -87,7 +86,7 @@ export const updateBlackjackGame = async (
   }
 
   if (status === BlackjackStatus.Push || status === BlackjackStatus.Lose || status === BlackjackStatus.Bust) {
-    await StatModel.findOneAndUpdate(
+    await StatsModel.findOneAndUpdate(
       { discord_id: discordId },
       {
         $set: {

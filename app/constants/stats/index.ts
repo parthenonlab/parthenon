@@ -1,4 +1,4 @@
-import { BlackjackStats, WordleStats } from '@/interfaces/games';
+import { BlackjackStats, WordleStats } from '@parthenonlab/types';
 
 export const INITIAL_BLACKJACK: BlackjackStats = {
   totalBlackjack: 0,
