@@ -4,51 +4,34 @@ import { INITIAL_WORDLE } from '@/constants/stats';
 import { MAX_ATTEMPTS, WORDLE_REWARDS } from '@/constants/wordle';
 
 import { GameCode } from '@/enums/games';
-import { GameObject } from '@/interfaces/games';
+import { ActiveGame, ActiveGameRequest, WordleGameData } from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
-import { GameModel } from '@/models/game';
+import { ActiveGameModel } from '@/models/game';
 import { StatsModel, UserModel } from '@parthenonlab/models';
 
-/**
- * Handles the server-side outcome of a Wordle guess.
- * On a win, deletes the game document then updates stats and credits the reward.
- * On an ongoing attempt, updates the guesses list.
- * On the final failed attempt, resets the streak, updates stats, and deletes the game document.
- *
- * @param game - The current game document from the database
- * @param discordId - The authenticated user's Discord ID
- * @param payload - The update payload containing the encrypted session code (the guessed word)
- * @returns A new session key, or null on failure
- */
 export const updateWordleGame = async (
-  game: GameObject,
+  game: ActiveGame,
   discordId: string,
-  payload: GameObject
-): Promise<Partial<GameObject> | null> => {
+  payload: ActiveGameRequest
+): Promise<Partial<ActiveGame> | null> => {
   const updatedKey = uuidv4();
-  const sessionCode = payload.data!.sessionCode as string;
-  const guess = decrypt(sessionCode);
+  const guess = decrypt(payload.data.sessionCode!);
 
-  const gameData =
-    typeof game.data === 'string' ? JSON.parse(game.data) : game.data;
+  const { answer, guesses } = game.data as WordleGameData;
+  const newGuesses = [...guesses, guess];
 
-  const newGuesses: string[] = [...(gameData.guesses as string[]), guess];
-
-  const isWin = guess === gameData.answer;
+  const isWin = guess === answer;
   const isAttempt = newGuesses.length < MAX_ATTEMPTS;
 
-  const userStats = await StatsModel.findOne({
-    discord_id: discordId,
-  });
-
+  const userStats = await StatsModel.findOne({ discord_id: discordId });
   const stats = userStats?.[GameCode.Wordle] ?? INITIAL_WORDLE;
 
   if (isWin) {
     const newDistribution = [...stats.distribution];
     newDistribution[newGuesses.length - 1] += 1;
 
-    await GameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
+    await ActiveGameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
 
     await Promise.all([
       StatsModel.findOneAndUpdate(
@@ -72,16 +55,9 @@ export const updateWordleGame = async (
       ),
     ]);
   } else if (isAttempt) {
-    await GameModel.findOneAndUpdate(
+    await ActiveGameModel.findOneAndUpdate(
       { discord_id: discordId, code: GameCode.Wordle },
-      {
-        ...payload,
-        key: updatedKey,
-        data: {
-          ...gameData,
-          guesses: newGuesses,
-        },
-      }
+      { key: updatedKey, data: { answer, guesses: newGuesses } }
     );
   } else {
     await StatsModel.findOneAndUpdate(
@@ -98,10 +74,7 @@ export const updateWordleGame = async (
       { upsert: true }
     );
 
-    await GameModel.findOneAndDelete({
-      discord_id: discordId,
-      key: game.key,
-    });
+    await ActiveGameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
   }
 
   return { key: updatedKey };

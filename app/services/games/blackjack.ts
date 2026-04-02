@@ -2,43 +2,25 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { INITIAL_BLACKJACK } from '@/constants/stats';
 import { BlackjackStatus, GameCode } from '@/enums/games';
-import { GameObject } from '@/interfaces/games';
+import { ActiveGame, ActiveGameRequest, BlackjackGameData } from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
-import { GameModel } from '@/models/game';
+import { ActiveGameModel } from '@/models/game';
 import { StatsModel, UserModel } from '@parthenonlab/models';
 
-/**
- * Handles the server-side outcome of a Blackjack game.
- * Decrypts the game status, calculates the cash delta based on the outcome and whether the player doubled,
- * updates stats, deletes the game document, then credits or debits the user's balance.
- *
- * @param game - The current game document from the database
- * @param discordId - The authenticated user's Discord ID
- * @param payload - The update payload containing the encrypted session code
- * @returns A new session key, or null on failure
- */
 export const updateBlackjackGame = async (
-  game: GameObject,
+  game: ActiveGame,
   discordId: string,
-  payload: GameObject
-): Promise<Partial<GameObject> | null> => {
+  payload: ActiveGameRequest
+): Promise<Partial<ActiveGame> | null> => {
   const updatedKey = uuidv4();
-  const sessionCode = payload.data!.sessionCode as string;
-
-  const statusString = decrypt(sessionCode);
+  const statusString = decrypt(payload.data.sessionCode!);
   const status = statusString.split('-')[0];
   const isDouble = statusString.split('-')[1] === 'double';
 
-  const gameData =
-    typeof game.data === 'string' ? JSON.parse(game.data) : game.data;
+  const { bet } = game.data as BlackjackGameData;
 
-  const bet = parseInt(gameData.bet as string, 10);
-
-  const userStats = await StatsModel.findOne({
-    discord_id: discordId,
-  });
-
+  const userStats = await StatsModel.findOne({ discord_id: discordId });
   const stats = userStats?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK;
 
   let cashDelta = 0;
@@ -85,7 +67,11 @@ export const updateBlackjackGame = async (
     if (isDouble) cashDelta = -bet;
   }
 
-  if (status === BlackjackStatus.Push || status === BlackjackStatus.Lose || status === BlackjackStatus.Bust) {
+  if (
+    status === BlackjackStatus.Push ||
+    status === BlackjackStatus.Lose ||
+    status === BlackjackStatus.Bust
+  ) {
     await StatsModel.findOneAndUpdate(
       { discord_id: discordId },
       {
@@ -100,10 +86,13 @@ export const updateBlackjackGame = async (
     );
   }
 
-  await GameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
+  await ActiveGameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
 
   if (cashDelta !== 0) {
-    await UserModel.findOneAndUpdate({ discord_id: discordId }, { $inc: { cash: cashDelta } });
+    await UserModel.findOneAndUpdate(
+      { discord_id: discordId },
+      { $inc: { cash: cashDelta } }
+    );
   }
 
   return { key: updatedKey };

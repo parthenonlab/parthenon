@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useFetch, useModal, useParthenon, useWordle } from '@/hooks';
+import { Stats as StatsData, WordleStats } from '@parthenonlab/types';
 
 import { API_URLS } from '@/constants/api';
 import { INITIAL_WORDLE } from '@/constants/stats';
@@ -11,26 +11,18 @@ import { MAX_ATTEMPTS, WORD_LENGTH, WORD_LIST } from '@/constants/wordle';
 import { GameCode, GamePage } from '@/enums/games';
 import { WordleKeyStatus, WordleStatus } from '@/enums/games';
 
-import { GameObject, WordleGuess } from '@/interfaces/games';
+import { useFetch, useModal, useParthenon, useWordle } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
+import { ActiveGame, ActiveGameRequest, WordleGuess } from '@/interfaces/games';
 import { encrypt } from '@/lib/utils';
-import { Stats as StatsData, WordleStats } from '@parthenonlab/types';
 
 import { Loading, Modal } from '@/components';
 import { AnswerGrid, Keyboard, Notice, Rules, Stats } from './components';
 import styles from '../shared/styles/page.module.scss';
 
 const Wordle = () => {
-  const {
-    isActiveGamesFetched,
-    isUserFetched,
-    setStateActiveGame,
-    setStateUser,
-    user,
-  } = useParthenon();
-
+  const { isUserFetched, setStateUser, user } = useParthenon();
   const { modalType, openModal, closeModal } = useModal<'rules' | 'stats'>();
-
   const { fetchGet, fetchPatch, fetchPost } = useFetch();
 
   const [stats, setStats] = useState<WordleStats>(INITIAL_WORDLE);
@@ -51,6 +43,7 @@ const Wordle = () => {
     onResume,
   } = useWordle();
 
+  const [isGameReady, setIsGameReady] = useState(false);
   const [isStatsUpdated, setIsStatsUpdated] = useState(false);
   const [page, setPage] = useState(GamePage.Overview);
 
@@ -64,7 +57,7 @@ const Wordle = () => {
 
     try {
       const data = await fetchGet<StatsData>(
-        `${API_URLS.STATS}/${user.discord_id}`
+        `${API_URLS.STATS}/${user.discord_id}`,
       );
       setStats(data?.[GameCode.Wordle] ?? INITIAL_WORDLE);
     } catch {
@@ -80,33 +73,38 @@ const Wordle = () => {
   }, [fetchStats, isStatsFetched, isUserFetched]);
 
   const getGame = useCallback(async () => {
-    const game = await fetchPost<GameObject>(API_URLS.GAMES, {
-      code: GameCode.Wordle,
-      data: {
-        sessionKey: encrypt(answerRef.current),
+    const game = await fetchPost<ActiveGame, ActiveGameRequest>(
+      API_URLS.GAMES,
+      {
+        code: GameCode.Wordle,
+        data: {
+          sessionKey: encrypt(answerRef.current),
+        },
       },
-    });
+    );
 
     if (game) gameKeyRef.current = game.key;
-    setStateActiveGame(GameCode.Wordle, game);
-  }, [fetchPost, setStateActiveGame]);
+    setIsGameReady(true);
+  }, [fetchPost]);
 
   const updateGame = useCallback(
     async (guess: string) => {
       if (!gameKeyRef.current) return;
 
-      const game = await fetchPatch<GameObject>(API_URLS.GAMES, {
-        key: gameKeyRef.current,
-        code: GameCode.Wordle,
-        data: {
-          sessionCode: encrypt(guess),
+      const game = await fetchPatch<ActiveGame, ActiveGameRequest>(
+        API_URLS.GAMES,
+        {
+          key: gameKeyRef.current,
+          code: GameCode.Wordle,
+          data: {
+            sessionCode: encrypt(guess),
+          },
         },
-      });
+      );
 
       if (game) gameKeyRef.current = game.key;
-      setStateActiveGame(GameCode.Wordle, game);
     },
-    [fetchPatch, setStateActiveGame],
+    [fetchPatch],
   );
 
   const modifiedEnter = useCallback(async () => {
@@ -278,16 +276,12 @@ const Wordle = () => {
             <>
               <button
                 className={styles.rulesOverview}
-                onClick={() =>
-                  openModal('rules')
-                }>
+                onClick={() => openModal('rules')}>
                 <RulesIcon />
               </button>
               <button
                 className={styles.rulesDesktop}
-                onClick={() =>
-                  openModal('rules')
-                }>
+                onClick={() => openModal('rules')}>
                 RULES
               </button>
             </>
@@ -296,9 +290,7 @@ const Wordle = () => {
             <>
               <button
                 className={styles.rules}
-                onClick={() =>
-                  openModal('rules')
-                }>
+                onClick={() => openModal('rules')}>
                 <RulesIcon />
               </button>
               <button
@@ -328,8 +320,8 @@ const Wordle = () => {
       )}
       {page === GamePage.Playing && (
         <div className={styles.playing}>
-          {!isActiveGamesFetched && <Loading />}
-          {isActiveGamesFetched && (
+          {!isGameReady && <Loading />}
+          {isGameReady && (
             <>
               <Notice
                 answer={answer}

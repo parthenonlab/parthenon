@@ -3,6 +3,8 @@
 import { redirect } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { BlackjackStats, Stats as StatsData, User } from '@parthenonlab/types';
+
 import { API_URLS } from '@/constants/api';
 import { GAME_OVER_STATUS_BLK } from '@/constants/cards';
 import { INITIAL_BLACKJACK } from '@/constants/stats';
@@ -10,26 +12,16 @@ import { BlackjackStatus, GameCode, GamePage } from '@/enums/games';
 
 import { useBlackjack, useFetch, useModal, useParthenon } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
+import { ActiveGame, ActiveGameRequest, PlayCard } from '@/interfaces/games';
 import { encrypt } from '@/lib/utils/encryption';
-
-import { BlackjackStats, Stats as StatsData, User } from '@parthenonlab/types';
-import { GameObject, PlayCard } from '@/interfaces/games';
 
 import { Loading, Modal } from '@/components';
 import { Balance, GameTable, Rules, Stats } from './components';
 import styles from '../shared/styles/page.module.scss';
 
 const Blackjack = () => {
-  const {
-    isActiveGamesFetched,
-    isUserFetched,
-    user,
-    setStateActiveGame,
-    setStateUser,
-  } = useParthenon();
-
+  const { isUserFetched, user, setStateUser } = useParthenon();
   const { modalType, openModal, closeModal } = useModal<'rules' | 'stats'>();
-
   const { fetchGet, fetchPatch, fetchPost } = useFetch();
 
   const [stats, setStats] = useState<BlackjackStats>(INITIAL_BLACKJACK);
@@ -51,6 +43,7 @@ const Blackjack = () => {
     onStand,
   } = useBlackjack();
 
+  const [isGameReady, setIsGameReady] = useState(false);
   const [page, setPage] = useState(GamePage.Overview);
 
   const [dealerLastHand, setDealerLastHand] = useState<PlayCard[]>([]);
@@ -65,7 +58,7 @@ const Blackjack = () => {
 
     try {
       const data = await fetchGet<StatsData>(
-        `${API_URLS.STATS}/${user.discord_id}`
+        `${API_URLS.STATS}/${user.discord_id}`,
       );
       setStats(data?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK);
     } catch {
@@ -81,40 +74,42 @@ const Blackjack = () => {
   }, [fetchStats, isStatsFetched, isUserFetched]);
 
   const getGame = useCallback(async () => {
-    const game = await fetchPost<GameObject>(API_URLS.GAMES, {
-      code: GameCode.Blackjack,
-      data: {
-        sessionKey: encrypt('' + betRef.current),
+    const game = await fetchPost<ActiveGame, ActiveGameRequest>(
+      API_URLS.GAMES,
+      {
+        code: GameCode.Blackjack,
+        data: {
+          sessionKey: encrypt('' + betRef.current),
+        },
       },
-    });
+    );
 
     if (game) gameKeyRef.current = game.key;
-    setStateActiveGame(GameCode.Blackjack, game);
-  }, [fetchPost, setStateActiveGame]);
+    setIsGameReady(true);
+  }, [fetchPost]);
 
   const updateGame = useCallback(async () => {
     if (!gameKeyRef.current) return;
 
     const codeString = double ? status + '-double' : status;
 
-    const game = await fetchPatch<GameObject>(API_URLS.GAMES, {
-      key: gameKeyRef.current,
-      code: GameCode.Blackjack,
-      data: {
-        sessionCode: encrypt(codeString),
+    const game = await fetchPatch<ActiveGame, ActiveGameRequest>(
+      API_URLS.GAMES,
+      {
+        key: gameKeyRef.current,
+        code: GameCode.Blackjack,
+        data: {
+          sessionCode: encrypt(codeString),
+        },
       },
-    });
+    );
 
     if (game) gameKeyRef.current = game.key;
-    setStateActiveGame(GameCode.Blackjack, game);
-  }, [double, status, fetchPatch, setStateActiveGame]);
+  }, [double, status, fetchPatch]);
 
-  const updateStats = useCallback(
-    (payload: BlackjackStats) => {
-      setStats({ ...payload });
-    },
-    [],
-  );
+  const updateStats = useCallback((payload: BlackjackStats) => {
+    setStats({ ...payload });
+  }, []);
 
   const updateUser = useCallback(
     async (payload: Partial<User>) => {
@@ -226,16 +221,12 @@ const Blackjack = () => {
             <>
               <button
                 className={styles.rulesOverview}
-                onClick={() =>
-                  openModal('rules')
-                }>
+                onClick={() => openModal('rules')}>
                 <RulesIcon />
               </button>
               <button
                 className={styles.rulesDesktop}
-                onClick={() =>
-                  openModal('rules')
-                }>
+                onClick={() => openModal('rules')}>
                 RULES
               </button>
             </>
@@ -244,9 +235,7 @@ const Blackjack = () => {
             <>
               <button
                 className={styles.rules}
-                onClick={() =>
-                  openModal('rules')
-                }>
+                onClick={() => openModal('rules')}>
                 <RulesIcon />
               </button>
               <button
@@ -292,8 +281,8 @@ const Blackjack = () => {
       )}
       {page === GamePage.Playing && (
         <div className={styles.playing}>
-          {(!isUserFetched || !isActiveGamesFetched) && <Loading />}
-          {isUserFetched && user && isActiveGamesFetched && (
+          {(!isUserFetched || !isGameReady) && <Loading />}
+          {isUserFetched && user && isGameReady && (
             <GameTable
               bet={bet}
               cash={user.cash}
