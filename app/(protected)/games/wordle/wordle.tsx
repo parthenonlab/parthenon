@@ -178,7 +178,7 @@ const Wordle = () => {
         currentStreak: stats.currentStreak + 1,
         distribution: newDistribution,
         maxStreak: Math.max(stats.maxStreak, stats.currentStreak + 1),
-        totalPlayed: stats.totalPlayed + 1,
+        totalPlays: stats.totalPlays + 1,
         totalWon: stats.totalWon + 1,
       });
 
@@ -194,7 +194,7 @@ const Wordle = () => {
       setStats({
         ...stats,
         currentStreak: 0,
-        totalPlayed: stats.totalPlayed + 1,
+        totalPlays: stats.totalPlays + 1,
       });
     }
   }, [

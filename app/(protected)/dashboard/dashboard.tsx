@@ -6,10 +6,10 @@ import Image from 'next/image';
 import { Loading } from '@/components';
 import { useParthenon } from '@/hooks';
 import { SilverIcon, StarIcon } from '@/images/icons';
+import { formatNumberToString } from '@/lib/utils';
 
 import { AccountLinked, Instructions, Register } from './components';
 import styles from './page.module.scss';
-import { formatAmountToString } from '@/lib/utils/formatAmountToString';
 
 const Dashboard = () => {
   const { user: userClerk } = useUser();
@@ -64,14 +64,14 @@ const Dashboard = () => {
             <div className={styles.item}>
               <p className={styles.label}>
                 <span>POINTS</span>
-                <span>{user ? formatAmountToString(user.cash) : 0}</span>
+                <span>{user ? formatNumberToString(user.cash) : 0}</span>
               </p>
               <SilverIcon />
             </div>
             <div className={styles.item}>
               <p className={styles.label}>
                 <span>STARS</span>
-                <span>{user ? formatAmountToString(user.stars) : 0}</span>
+                <span>{user ? formatNumberToString(user.stars) : 0}</span>
               </p>
               <StarIcon />
             </div>

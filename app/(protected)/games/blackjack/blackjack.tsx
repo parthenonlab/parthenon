@@ -131,7 +131,7 @@ const Blackjack = () => {
     updateGame();
 
     const baseStats = stats ?? INITIAL_BLACKJACK;
-    const newStats = { ...baseStats, totalPlayed: baseStats.totalPlayed + 1 };
+    const newStats = { ...baseStats, totalPlays: baseStats.totalPlays + 1 };
 
     if (status === BlackjackStatus.Blackjack) {
       updateStats({
