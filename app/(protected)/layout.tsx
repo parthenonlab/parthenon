@@ -13,7 +13,7 @@ import { useFetch, useParthenon } from '@/hooks';
 import { getLinkedUser } from '@/lib/utils';
 
 import { GameObject } from '@/interfaces/games';
-import { StatObject } from '@/interfaces/stat';
+import { Stats } from '@parthenonlab/types';
 
 import styles from './layout.module.scss';
 
@@ -55,7 +55,7 @@ const ProtectedLayout = ({
       if (!discordId) return;
 
       const url = `${API_URLS.STATS}/${discordId}`;
-      const stats = await fetchGet<StatObject>(url);
+      const stats = await fetchGet<Stats>(url);
 
       setStateStats(
         stats ?? {

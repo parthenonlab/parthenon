@@ -8,8 +8,7 @@ import { GameObject } from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
 import { GameModel } from '@/models/game';
-import { StatModel } from '@/models/stat';
-import { UserModel } from '@parthenonlab/models';
+import { StatsModel, UserModel } from '@parthenonlab/models';
 
 /**
  * Handles the server-side outcome of a Wordle guess.
@@ -39,7 +38,7 @@ export const updateWordleGame = async (
   const isWin = guess === gameData.answer;
   const isAttempt = newGuesses.length < MAX_ATTEMPTS;
 
-  const userStats = await StatModel.findOne({
+  const userStats = await StatsModel.findOne({
     discord_id: discordId,
   });
 
@@ -52,7 +51,7 @@ export const updateWordleGame = async (
     await GameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
 
     await Promise.all([
-      StatModel.findOneAndUpdate(
+      StatsModel.findOneAndUpdate(
         { discord_id: discordId },
         {
           $set: {
@@ -85,7 +84,7 @@ export const updateWordleGame = async (
       }
     );
   } else {
-    await StatModel.findOneAndUpdate(
+    await StatsModel.findOneAndUpdate(
       { discord_id: discordId },
       {
         $set: {

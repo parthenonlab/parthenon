@@ -1,8 +1,7 @@
 import { GameCode } from '@/enums/games';
 import { GameObject } from '@/interfaces/games';
 import { ModalState } from '@/interfaces/modal';
-import { StatObject } from '@/interfaces/stat';
-import { User } from '@parthenonlab/types';
+import { Stats, User } from '@parthenonlab/types';
 
 export interface ParthenonState {
   activeGames: Partial<Record<GameCode, GameObject>> | null;
@@ -10,7 +9,7 @@ export interface ParthenonState {
   isStatsFetched: boolean;
   isUserFetched: boolean;
   modal: ModalState;
-  stats: StatObject | null;
+  stats: Stats | null;
   user: User | null;
 }
 
@@ -21,7 +20,7 @@ export type ParthenonAction =
     }
   | { type: 'SET_ACTIVE_GAMES'; payload: GameObject[] }
   | { type: 'SET_MODAL'; payload: Partial<ModalState> }
-  | { type: 'SET_STATS'; payload: StatObject | null }
+  | { type: 'SET_STATS'; payload: Stats | null }
   | { type: 'SET_USER'; payload: User | null };
 
 export interface ParthenonContextType {
