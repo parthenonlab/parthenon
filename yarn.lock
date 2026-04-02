@@ -1150,15 +1150,15 @@
     "@parcel/watcher-win32-ia32" "2.5.1"
     "@parcel/watcher-win32-x64" "2.5.1"
 
-"@parthenonlab/models@^0.2.0":
-  version "0.2.0"
-  resolved "https://npm.pkg.github.com/download/@parthenonlab/models/0.2.0/f4cde7cb3700b13b279d07b3d9a369709d7e4b98#f4cde7cb3700b13b279d07b3d9a369709d7e4b98"
-  integrity sha512-m7uoqL6vdjAFN0s3J4HJ7bSfbKEvqFvAldiroLx+hRP0EsaRmbvnrXBkj1+izkdl7PqRU2nNWfs+/qByMk7iyw==
-
-"@parthenonlab/types@^0.2.1":
+"@parthenonlab/models@^0.2.1":
   version "0.2.1"
-  resolved "https://npm.pkg.github.com/download/@parthenonlab/types/0.2.1/8084d0c4bb9e3370167cdffbab042c488673e698#8084d0c4bb9e3370167cdffbab042c488673e698"
-  integrity sha512-+KvQxFtZzJV8q3KFGmzL6HCpi+HzICj89iYfY5GzklUuoJ7AL3MHWO1VPCNghDuvMDooZeKCArYeq0Pz2RuAZQ==
+  resolved "https://npm.pkg.github.com/download/@parthenonlab/models/0.2.1/4ab97239fe4daffc90d57186171f33b3d245a00b#4ab97239fe4daffc90d57186171f33b3d245a00b"
+  integrity sha512-QP6/pN0w76LSRWXwc2JUVKtiTljeoUMWlhGOwztmFMO5D80nTkqsxHSZDd2AyFNWMcjc0Wmwet4Cb4WWyBbp/Q==
+
+"@parthenonlab/types@^0.2.2":
+  version "0.2.2"
+  resolved "https://npm.pkg.github.com/download/@parthenonlab/types/0.2.2/8e18d13244aefd4131ebd2ba4aeaffa8e769df09#8e18d13244aefd4131ebd2ba4aeaffa8e769df09"
+  integrity sha512-E/JtPBUC7M0p4Q31r2AFmL3bsbD/EO+3LQ0G5tgCgRvr1Jnl4koPly0/D5QfATW3kXtV0NYDKJkMcUAgoc4OKQ==
 
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"

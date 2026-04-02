@@ -3,7 +3,7 @@ import ChartDataLabels, { Context } from 'chartjs-plugin-datalabels';
 import { Bar } from 'react-chartjs-2';
 
 import { INITIAL_WORDLE } from '@/constants/stats';
-import { WordleStats } from '@/interfaces/games';
+import { WordleStats } from '@parthenonlab/types';
 
 import styles from '../styles/stats.module.scss';
 

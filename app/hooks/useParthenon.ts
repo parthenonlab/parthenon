@@ -3,7 +3,7 @@ import { useCallback, useContext } from 'react';
 import { GameCode } from '@/enums/games';
 import { GameObject } from '@/interfaces/games';
 import { ModalState } from '@/interfaces/modal';
-import { Stats, User } from '@parthenonlab/types';
+import { User } from '@parthenonlab/types';
 import { ParthenonContext } from '@/providers/context';
 
 export const useParthenon = () => {
@@ -44,13 +44,6 @@ export const useParthenon = () => {
     [dispatch]
   );
 
-  const setStateStats = useCallback(
-    (stats: Stats | null) => {
-      dispatch({ type: 'SET_STATS', payload: stats });
-    },
-    [dispatch]
-  );
-
   const setStateUser = useCallback(
     (user: User | null) => {
       dispatch({ type: 'SET_USER', payload: user });
@@ -63,7 +56,6 @@ export const useParthenon = () => {
     setStateActiveGame,
     setStateActiveGames,
     setStateModal,
-    setStateStats,
     setStateUser,
   };
 };

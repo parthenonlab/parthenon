@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
-import { getStats } from '@/services/stat';
+import { getStats } from '@/services/stats';
 
 /**
  * GET /api/stats/:id

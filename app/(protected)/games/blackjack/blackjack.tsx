@@ -12,8 +12,8 @@ import { useBlackjack, useFetch, useParthenon } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
 import { encrypt } from '@/lib/utils/encryption';
 
-import { BlackjackStats, GameObject, PlayCard } from '@/interfaces/games';
-import { User } from '@parthenonlab/types';
+import { BlackjackStats, Stats as StatsData, User } from '@parthenonlab/types';
+import { GameObject, PlayCard } from '@/interfaces/games';
 
 import { Loading } from '@/components';
 import { Balance, GameTable, Rules, Stats } from './components';
@@ -22,17 +22,17 @@ import styles from '../shared/styles/page.module.scss';
 const Blackjack = () => {
   const {
     isActiveGamesFetched,
-    isStatsFetched,
     isUserFetched,
-    stats,
     user,
     setStateActiveGame,
     setStateModal,
-    setStateStats,
     setStateUser,
   } = useParthenon();
 
-  const { fetchPatch, fetchPost } = useFetch();
+  const { fetchGet, fetchPatch, fetchPost } = useFetch();
+
+  const [stats, setStats] = useState<BlackjackStats>(INITIAL_BLACKJACK);
+  const [isStatsFetched, setIsStatsFetched] = useState(false);
 
   const {
     bet,
@@ -58,6 +58,26 @@ const Blackjack = () => {
   const betRef = useRef(bet);
   const gameKeyRef = useRef<string | undefined>(null);
   const gameSavedRef = useRef(false);
+
+  const fetchStats = useCallback(async () => {
+    if (!user?.discord_id) return;
+
+    try {
+      const data = await fetchGet<StatsData>(
+        `${API_URLS.STATS}/${user.discord_id}`
+      );
+      setStats(data?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK);
+    } catch {
+      setStats(INITIAL_BLACKJACK);
+    } finally {
+      setIsStatsFetched(true);
+    }
+  }, [fetchGet, user]);
+
+  useEffect(() => {
+    if (!isUserFetched || isStatsFetched) return;
+    fetchStats();
+  }, [fetchStats, isStatsFetched, isUserFetched]);
 
   const getGame = useCallback(async () => {
     const game = await fetchPost<GameObject>(API_URLS.GAMES, {
@@ -89,15 +109,10 @@ const Blackjack = () => {
   }, [double, status, fetchPatch, setStateActiveGame]);
 
   const updateStats = useCallback(
-    async (payload: BlackjackStats) => {
-      if (!stats) return;
-
-      setStateStats({
-        ...stats,
-        [GameCode.Blackjack]: { ...payload },
-      });
+    (payload: BlackjackStats) => {
+      setStats({ ...payload });
     },
-    [stats, setStateStats],
+    [],
   );
 
   const updateUser = useCallback(
@@ -119,7 +134,7 @@ const Blackjack = () => {
     gameSavedRef.current = true;
     updateGame();
 
-    const baseStats = stats?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK;
+    const baseStats = stats ?? INITIAL_BLACKJACK;
     const newStats = { ...baseStats, totalPlayed: baseStats.totalPlayed + 1 };
 
     if (status === BlackjackStatus.Blackjack) {
@@ -247,9 +262,7 @@ const Blackjack = () => {
                 onClick={() =>
                   setStateModal({
                     isOpen: true,
-                    content: stats && (
-                      <Stats data={stats[GameCode.Blackjack]} />
-                    ),
+                    content: <Stats data={stats} />,
                   })
                 }>
                 <StatsIcon />
@@ -286,9 +299,7 @@ const Blackjack = () => {
           )}
           <div className={styles.statsContainer}>
             {(!isUserFetched || !isStatsFetched) && <Loading />}
-            {isStatsFetched && stats && (
-              <Stats data={stats[GameCode.Blackjack]} />
-            )}
+            {isStatsFetched && <Stats data={stats} />}
           </div>
         </div>
       )}
