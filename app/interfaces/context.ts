@@ -1,21 +1,11 @@
-import { GameCode } from '@/enums/games';
-import { GameObject } from '@/interfaces/games';
 import { User } from '@parthenonlab/types';
 
 export interface ParthenonState {
-  activeGames: Partial<Record<GameCode, GameObject>> | null;
-  isActiveGamesFetched: boolean;
   isUserFetched: boolean;
   user: User | null;
 }
 
-export type ParthenonAction =
-  | {
-      type: 'SET_ACTIVE_GAME';
-      payload: { code: GameCode; data: Partial<GameObject> | null };
-    }
-  | { type: 'SET_ACTIVE_GAMES'; payload: GameObject[] }
-  | { type: 'SET_USER'; payload: User | null };
+export type ParthenonAction = { type: 'SET_USER'; payload: User | null };
 
 export interface ParthenonContextType {
   state: ParthenonState;

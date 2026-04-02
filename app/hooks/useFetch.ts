@@ -67,7 +67,7 @@ export const useFetch = () => {
    * @returns The parsed response body, or null on failure
    */
   const fetchPatch = useCallback(
-    async <T>(url: string, payload: Partial<T>): Promise<T | null> => {
+    async <TResponse, TPayload = Partial<TResponse>>(url: string, payload: TPayload): Promise<TResponse | null> => {
       try {
         const response = await fetch(url, {
           method: 'PATCH',
@@ -78,7 +78,7 @@ export const useFetch = () => {
         if (!response.ok) throw new Error('Parthenon: PATCH Request Failed');
 
         const data = await response.json();
-        return data as T;
+        return data as TResponse;
       } catch (error) {
         console.error(error);
         return null;
@@ -95,7 +95,7 @@ export const useFetch = () => {
    * @returns The parsed response body, or null on failure
    */
   const fetchPost = useCallback(
-    async <T>(url: string, payload: Partial<T>): Promise<T | null> => {
+    async <TResponse, TPayload = Partial<TResponse>>(url: string, payload: TPayload): Promise<TResponse | null> => {
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -106,7 +106,7 @@ export const useFetch = () => {
         if (!response.ok) throw new Error('Parthenon: POST Request Failed');
 
         const data = await response.json();
-        return data as T;
+        return data as TResponse;
       } catch (error) {
         console.error(error);
         return null;
