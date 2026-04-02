@@ -27,14 +27,6 @@ export const parthenonReducer = (
         activeGames: updatedActiveGames,
         isActiveGamesFetched: true,
       };
-    case 'SET_MODAL':
-      return {
-        ...state,
-        modal: {
-          ...state.modal,
-          ...action.payload,
-        },
-      };
     case 'SET_USER':
       return {
         ...state,

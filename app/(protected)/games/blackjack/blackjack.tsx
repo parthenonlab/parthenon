@@ -8,14 +8,14 @@ import { GAME_OVER_STATUS_BLK } from '@/constants/cards';
 import { INITIAL_BLACKJACK } from '@/constants/stats';
 import { BlackjackStatus, GameCode, GamePage } from '@/enums/games';
 
-import { useBlackjack, useFetch, useParthenon } from '@/hooks';
+import { useBlackjack, useFetch, useModal, useParthenon } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
 import { encrypt } from '@/lib/utils/encryption';
 
 import { BlackjackStats, Stats as StatsData, User } from '@parthenonlab/types';
 import { GameObject, PlayCard } from '@/interfaces/games';
 
-import { Loading } from '@/components';
+import { Loading, Modal } from '@/components';
 import { Balance, GameTable, Rules, Stats } from './components';
 import styles from '../shared/styles/page.module.scss';
 
@@ -25,9 +25,10 @@ const Blackjack = () => {
     isUserFetched,
     user,
     setStateActiveGame,
-    setStateModal,
     setStateUser,
   } = useParthenon();
+
+  const { modalType, openModal, closeModal } = useModal<'rules' | 'stats'>();
 
   const { fetchGet, fetchPatch, fetchPost } = useFetch();
 
@@ -226,20 +227,14 @@ const Blackjack = () => {
               <button
                 className={styles.rulesOverview}
                 onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Rules />,
-                  })
+                  openModal('rules')
                 }>
                 <RulesIcon />
               </button>
               <button
                 className={styles.rulesDesktop}
                 onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Rules />,
-                  })
+                  openModal('rules')
                 }>
                 RULES
               </button>
@@ -250,21 +245,13 @@ const Blackjack = () => {
               <button
                 className={styles.rules}
                 onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Rules />,
-                  })
+                  openModal('rules')
                 }>
                 <RulesIcon />
               </button>
               <button
                 className={styles.stats}
-                onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Stats data={stats} />,
-                  })
-                }>
+                onClick={() => openModal('stats')}>
                 <StatsIcon />
               </button>
             </>
@@ -328,6 +315,11 @@ const Blackjack = () => {
             />
           )}
         </div>
+      )}
+      {modalType && (
+        <Modal onClose={closeModal}>
+          {modalType === 'rules' ? <Rules /> : <Stats data={stats} />}
+        </Modal>
       )}
     </div>
   );
