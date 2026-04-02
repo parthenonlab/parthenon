@@ -29,6 +29,7 @@
 .gridItem {
   align-items: center;
   background-color: var(--game-tile-background);
+  cursor: pointer;
   border: 2px solid var(--game-tile-border);
   border-radius: 10px;
   display: flex;
