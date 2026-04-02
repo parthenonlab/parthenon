@@ -1,27 +1,34 @@
 import { v4 as uuidv4 } from 'uuid';
 import { currentUser } from '@clerk/nextjs/server';
 
+import { UserModel } from '@parthenonlab/models';
 import { GameCode } from '@/enums/games';
-import { ActiveGame, ActiveGameRequest, BlackjackGameData, WordleGameData } from '@/interfaces/games';
+
+import {
+  ActiveGame,
+  ActiveGameRequest,
+  BlackjackGameData,
+  WordleGameData,
+} from '@/interfaces/games';
+
 import { decrypt } from '@/lib/utils';
 import { ActiveGameModel } from '@/models/game';
 
 import { updateBlackjackGame } from './blackjack';
 import { updateWordleGame } from './wordle';
-import { UserModel } from '@parthenonlab/models';
 
 const getDiscordId = async () => {
   const user = await currentUser();
 
   const discordAccount = user?.externalAccounts.find(
-    account => account.provider === 'oauth_discord'
+    account => account.provider === 'oauth_discord',
   );
 
   return discordAccount?.providerUserId;
 };
 
 export const createActiveGame = async (
-  payload: ActiveGameRequest
+  payload: ActiveGameRequest,
 ): Promise<Partial<ActiveGame> | null> => {
   const discordId = await getDiscordId();
   if (!discordId) return null;
@@ -49,13 +56,13 @@ export const createActiveGame = async (
   await ActiveGameModel.findOneAndReplace(
     { discord_id: discordId, code: payload.code },
     { discord_id: discordId, code: payload.code, key, data },
-    { upsert: true }
+    { upsert: true },
   );
 
   if (payload.code === GameCode.Blackjack) {
     await UserModel.findOneAndUpdate(
       { discord_id: discordId },
-      { $inc: { cash: -(data as BlackjackGameData).bet } }
+      { $inc: { cash: -(data as BlackjackGameData).bet } },
     );
   }
 
@@ -64,7 +71,7 @@ export const createActiveGame = async (
 
 export const deleteActiveGame = async (
   id: string,
-  code: GameCode
+  code: GameCode,
 ): Promise<Partial<ActiveGame> | null> => {
   const game = await ActiveGameModel.findOneAndDelete({ discord_id: id, code });
 
@@ -78,7 +85,7 @@ export const getActiveGames = async (id: string): Promise<ActiveGame[]> => {
 };
 
 export const updateActiveGame = async (
-  payload: ActiveGameRequest
+  payload: ActiveGameRequest,
 ): Promise<Partial<ActiveGame> | null> => {
   const discordId = await getDiscordId();
   if (!discordId) return null;

@@ -6,10 +6,10 @@ import Image from 'next/image';
 import { Loading } from '@/components';
 import { useParthenon } from '@/hooks';
 import { SilverIcon, StarIcon } from '@/images/icons';
+import { formatNumberToString } from '@/lib/utils';
 
 import { AccountLinked, Instructions, Register } from './components';
 import styles from './page.module.scss';
-import { formatNumberToString } from '@/lib/utils';
 
 const Dashboard = () => {
   const { user: userClerk } = useUser();

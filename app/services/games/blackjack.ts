@@ -2,7 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { INITIAL_BLACKJACK } from '@/constants/stats';
 import { BlackjackStatus, GameCode } from '@/enums/games';
-import { ActiveGame, ActiveGameRequest, BlackjackGameData } from '@/interfaces/games';
+import {
+  ActiveGame,
+  ActiveGameRequest,
+  BlackjackGameData,
+} from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
 import { ActiveGameModel } from '@/models/game';
@@ -11,7 +15,7 @@ import { StatsModel, UserModel } from '@parthenonlab/models';
 export const updateBlackjackGame = async (
   game: ActiveGame,
   discordId: string,
-  payload: ActiveGameRequest
+  payload: ActiveGameRequest,
 ): Promise<Partial<ActiveGame> | null> => {
   const updatedKey = uuidv4();
   const statusString = decrypt(payload.data.sessionCode!);
@@ -35,12 +39,12 @@ export const updateBlackjackGame = async (
           [GameCode.Blackjack]: {
             ...stats,
             totalBlackjack: stats.totalBlackjack + 1,
-            totalPlayed: stats.totalPlayed + 1,
+            totalPlays: stats.totalPlays + 1,
             totalWon: stats.totalWon + 1,
           },
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
   } else if (
     status === BlackjackStatus.Win ||
@@ -54,12 +58,12 @@ export const updateBlackjackGame = async (
         $set: {
           [GameCode.Blackjack]: {
             ...stats,
-            totalPlayed: stats.totalPlayed + 1,
+            totalPlays: stats.totalPlays + 1,
             totalWon: stats.totalWon + 1,
           },
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
   } else if (status === BlackjackStatus.Push) {
     cashDelta = bet;
@@ -78,20 +82,23 @@ export const updateBlackjackGame = async (
         $set: {
           [GameCode.Blackjack]: {
             ...stats,
-            totalPlayed: stats.totalPlayed + 1,
+            totalPlays: stats.totalPlays + 1,
           },
         },
       },
-      { upsert: true }
+      { upsert: true },
     );
   }
 
-  await ActiveGameModel.findOneAndDelete({ discord_id: discordId, key: game.key });
+  await ActiveGameModel.findOneAndDelete({
+    discord_id: discordId,
+    key: game.key,
+  });
 
   if (cashDelta !== 0) {
     await UserModel.findOneAndUpdate(
       { discord_id: discordId },
-      { $inc: { cash: cashDelta } }
+      { $inc: { cash: cashDelta } },
     );
   }
 
