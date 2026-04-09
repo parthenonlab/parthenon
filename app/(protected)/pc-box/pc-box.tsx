@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { Catch } from '@parthenonlab/types';
@@ -98,9 +99,14 @@ export const PcBox = () => {
 
   return (
     <div className={styles.pcBox}>
-      <h1>PC BOX</h1>
+      <div className={styles.headline}>
+        <h1>PC BOX</h1>
+        <Link href="/pokedex" className={styles.pokedexLink}>
+          Pokédex →
+        </Link>
+      </div>
       <p className={styles.subtitle}>
-        Caught: {catches.length} | Unique: {unique} | Available Space:{' '}
+        Obtained: {catches.length} | Unique: {unique} | Available Space:{' '}
         {capacity - catches.length}
       </p>
       <div className={styles.sortButtons}>
