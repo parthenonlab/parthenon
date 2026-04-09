@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.8",
-    "@parthenonlab/models": "^0.2.2",
-    "@parthenonlab/types": "^0.2.3",
+    "@parthenonlab/models": "^0.2.3",
+    "@parthenonlab/types": "^0.2.4",
     "@vercel/analytics": "^2.0.1",
     "chart.js": "^4.5.1",
     "chartjs-plugin-datalabels": "^2.2.0",
