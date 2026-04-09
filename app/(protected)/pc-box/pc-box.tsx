@@ -6,7 +6,7 @@ import { Catch } from '@parthenonlab/types';
 import { Loading } from '@/components';
 import { POKEMON_TYPE_MAP, POKEMON_URLS } from '@/constants/pokemon';
 import { useFetch, useParthenon } from '@/hooks';
-import { formatDate, formatPokemonName } from '@/lib/utils';
+import { formatDate, formatTime, formatPokemonName } from '@/lib/utils';
 
 import styles from './page.module.scss';
 
@@ -44,13 +44,19 @@ export const PcBox = () => {
   const { user } = useParthenon();
   const [pokemonMap, setPokemonMap] = useState<Map<number, Pokemon>>(new Map());
   const [catches, setCatches] = useState<Catch[]>([]);
+  const [sort, setSort] = useState<'recent' | 'name' | 'id'>('recent');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([fetchAllPokemon(), fetchGetArray<Catch>('/api/catches')]).then(
       ([allPokemon, allCatches]) => {
         setPokemonMap(allPokemon);
-        setCatches(allCatches.sort((a, b) => new Date(b.caught_at).getTime() - new Date(a.caught_at).getTime()));
+        setCatches(
+          allCatches.sort(
+            (a, b) =>
+              new Date(b.caught_at).getTime() - new Date(a.caught_at).getTime(),
+          ),
+        );
         setLoading(false);
       },
     );
@@ -62,21 +68,55 @@ export const PcBox = () => {
   const capacity = getBoxCapacity(user?.subscriber ?? false, linked);
   const unique = new Set(catches.map(c => c.pokemon_id)).size;
 
+  const sortedCatches = [...catches].sort((a, b) => {
+    if (sort === 'recent')
+      return new Date(b.caught_at).getTime() - new Date(a.caught_at).getTime();
+    if (sort === 'name') {
+      const nameA = pokemonMap.get(a.pokemon_id)?.name ?? '';
+      const nameB = pokemonMap.get(b.pokemon_id)?.name ?? '';
+      return nameA.localeCompare(nameB);
+    }
+    return a.pokemon_id - b.pokemon_id;
+  });
+
   return (
     <div className={styles.pcBox}>
       <h1>PC BOX</h1>
       <p className={styles.subtitle}>
-        Caught: {catches.length} | Unique: {unique} | Available Space: {capacity - catches.length}
+        Caught: {catches.length} | Unique: {unique} | Available Space:{' '}
+        {capacity - catches.length}
       </p>
+      <div className={styles.sortButtons}>
+        {(['recent', 'name', 'id'] as const).map(option => (
+          <button
+            key={option}
+            className={`${styles.sortButton} ${sort === option ? styles.active : ''}`}
+            onClick={() => setSort(option)}>
+            {option === 'recent'
+              ? 'Most Recent'
+              : option === 'name'
+                ? 'Alphabetical'
+                : 'Pokédex #'}
+          </button>
+        ))}
+      </div>
       <div className={styles.grid}>
-        {catches.map(c => {
+        {sortedCatches.map(c => {
           const pokemon = pokemonMap.get(c.pokemon_id);
           if (!pokemon) return null;
           return (
-            <div key={c.catch_id} className={`${styles.card} ${c.shiny ? styles.shiny : ''}`}>
+            <div
+              key={c.catch_id}
+              className={`${styles.card} ${c.shiny ? styles.shiny : ''}`}>
               {c.favorite && <span className={styles.favorite}>★</span>}
-              <img src={pokemon.sprite} alt={pokemon.name} className={styles.sprite} />
-              <span className={styles.name}>{formatPokemonName(pokemon.name)}</span>
+              <img
+                src={pokemon.sprite}
+                alt={pokemon.name}
+                className={styles.sprite}
+              />
+              <span className={styles.name}>
+                {formatPokemonName(pokemon.name)}
+              </span>
               <div className={styles.types}>
                 {pokemon.types.map(type => (
                   <span key={type} className={`${styles.type} ${styles[type]}`}>
@@ -85,7 +125,11 @@ export const PcBox = () => {
                 ))}
               </div>
               <div className={styles.meta}>
-                {c.gender && <span className={styles.gender}>{c.gender === 'female' ? '♀' : '♂'}</span>}
+                {c.gender && !['nidoran-f', 'nidoran-m'].includes(pokemon.name) && (
+                  <span className={styles.gender}>
+                    {c.gender === 'female' ? '♀' : '♂'}
+                  </span>
+                )}
                 {c.shiny && <span className={styles.shinyBadge}>✦</span>}
               </div>
               <div className={styles.caught}>
@@ -94,7 +138,7 @@ export const PcBox = () => {
                   alt="Pokéball"
                   className={styles.pokeball}
                 />
-                <span>{formatDate(new Date(c.caught_at))}</span>
+                <span>{formatDate(new Date(c.caught_at))} {formatTime(new Date(c.caught_at))}</span>
               </div>
             </div>
           );
