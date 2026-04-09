@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { Catch } from '@parthenonlab/types';
@@ -26,12 +27,14 @@ const fetchAllPokemon = async (): Promise<Pokemon[]> => {
   const listRes = await fetch(`${POKEMON_URLS.POKEAPI}?limit=151`);
   const list = await listRes.json();
 
-  return list.results.map((entry: { name: string; url: string }, i: number) => ({
-    id: i + 1,
-    name: entry.name,
-    sprite: `${POKEMON_URLS.POKEMONDB}/${entry.name}.png`,
-    types: POKEMON_TYPE_MAP[entry.name] ?? [],
-  }));
+  return list.results.map(
+    (entry: { name: string; url: string }, i: number) => ({
+      id: i + 1,
+      name: entry.name,
+      sprite: `${POKEMON_URLS.POKEMONDB}/${entry.name}.png`,
+      types: POKEMON_TYPE_MAP[entry.name] ?? [],
+    }),
+  );
 };
 
 export const Pokedex = () => {
@@ -70,9 +73,16 @@ export const Pokedex = () => {
 
   return (
     <div className={styles.pokedex}>
-      <h1>POKÉDEX</h1>
+      <div className={styles.headline}>
+        <h1>POKÉDEX</h1>
+        <Link href="/pc-box" className={styles.pcBoxLink}>
+          PC Box →
+        </Link>
+      </div>
       <p className={styles.subtitle}>
-        Obtained: {Array.from(caughtMap.values()).reduce((sum, e) => sum + e.count, 0)} | Unique: {caughtMap.size} / {pokemon.length}
+        Obtained:{' '}
+        {Array.from(caughtMap.values()).reduce((sum, e) => sum + e.count, 0)} |
+        Unique: {caughtMap.size} / {pokemon.length}
       </p>
       <div className={styles.grid}>
         {pokemon.map(p => {
