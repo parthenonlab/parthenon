@@ -8,7 +8,7 @@ import { POKEMON_TYPE_MAP, POKEMON_URLS } from '@/constants/pokemon';
 import { useFetch } from '@/hooks';
 
 import styles from './page.module.scss';
-import { formatDate, formatPokemonName } from '@/lib/utils';
+import { formatPokemonName } from '@/lib/utils';
 
 interface Pokemon {
   id: number;
@@ -71,6 +71,9 @@ export const Pokedex = () => {
   return (
     <div className={styles.pokedex}>
       <h1>POKÉDEX</h1>
+      <p className={styles.subtitle}>
+        Obtained: {Array.from(caughtMap.values()).reduce((sum, e) => sum + e.count, 0)} | Unique: {caughtMap.size} / {pokemon.length}
+      </p>
       <div className={styles.grid}>
         {pokemon.map(p => {
           const entry = caughtMap.get(p.id);
@@ -81,8 +84,15 @@ export const Pokedex = () => {
               <span className={styles.id}>
                 #{String(p.id).padStart(4, '0')}
               </span>
-              {entry && entry.count > 1 && (
-                <span className={styles.count}>x{entry.count}</span>
+              {entry && (
+                <div className={styles.caughtBadge}>
+                  <img
+                    src={POKEMON_URLS.POKEBALL_IMAGE}
+                    alt="Pokéball"
+                    className={styles.pokeball}
+                  />
+                  {entry.count > 1 && <span>x{entry.count}</span>}
+                </div>
               )}
               <img src={p.sprite} alt={p.name} className={styles.sprite} />
               {entry && (
@@ -95,16 +105,6 @@ export const Pokedex = () => {
                   </span>
                 ))}
               </div>
-              {entry && (
-                <div className={styles.caught}>
-                  <img
-                    src={POKEMON_URLS.POKEBALL_IMAGE}
-                    alt="Pokéball"
-                    className={styles.pokeball}
-                  />
-                  <span>{formatDate(entry.caughtAt)}</span>
-                </div>
-              )}
             </div>
           );
         })}

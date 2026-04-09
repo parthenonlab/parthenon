@@ -46,6 +46,7 @@ export const PcBox = () => {
   const [catches, setCatches] = useState<Catch[]>([]);
   const [sort, setSort] = useState<'recent' | 'name' | 'id'>('recent');
   const [loading, setLoading] = useState(true);
+  const [releasing, setReleasing] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([fetchAllPokemon(), fetchGetArray<Catch>('/api/catches')]).then(
@@ -67,6 +68,22 @@ export const PcBox = () => {
   const linked = !!(user?.discord_id && user?.twitch_id);
   const capacity = getBoxCapacity(user?.subscriber ?? false, linked);
   const unique = new Set(catches.map(c => c.pokemon_id)).size;
+
+  const handleRelease = async (id: string, pokemonName: string) => {
+    if (
+      !confirm(
+        `Release ${formatPokemonName(pokemonName)}? This cannot be undone.`,
+      )
+    )
+      return;
+    setReleasing(id);
+    try {
+      const res = await fetch(`/api/catches/${id}`, { method: 'DELETE' });
+      if (res.ok) setCatches(prev => prev.filter(c => c.catch_id !== id));
+    } finally {
+      setReleasing(null);
+    }
+  };
 
   const sortedCatches = [...catches].sort((a, b) => {
     if (sort === 'recent')
@@ -105,41 +122,57 @@ export const PcBox = () => {
           const pokemon = pokemonMap.get(c.pokemon_id);
           if (!pokemon) return null;
           return (
-            <div
-              key={c.catch_id}
-              className={`${styles.card} ${c.shiny ? styles.shiny : ''}`}>
-              {c.favorite && <span className={styles.favorite}>★</span>}
-              <img
-                src={pokemon.sprite}
-                alt={pokemon.name}
-                className={styles.sprite}
-              />
-              <span className={styles.name}>
-                {formatPokemonName(pokemon.name)}
-              </span>
-              <div className={styles.types}>
-                {pokemon.types.map(type => (
-                  <span key={type} className={`${styles.type} ${styles[type]}`}>
-                    {type}
-                  </span>
-                ))}
-              </div>
-              <div className={styles.meta}>
-                {c.gender && !['nidoran-f', 'nidoran-m'].includes(pokemon.name) && (
-                  <span className={styles.gender}>
-                    {c.gender === 'female' ? '♀' : '♂'}
-                  </span>
-                )}
-                {c.shiny && <span className={styles.shinyBadge}>✦</span>}
-              </div>
-              <div className={styles.caught}>
+            <div key={c.catch_id} className={styles.slot}>
+              <div className={`${styles.card} ${c.shiny ? styles.shiny : ''}`}>
+                {c.favorite && <span className={styles.favorite}>★</span>}
                 <img
-                  src={POKEMON_URLS.POKEBALL_IMAGE}
-                  alt="Pokéball"
-                  className={styles.pokeball}
+                  src={
+                    c.shiny
+                      ? pokemon.sprite.replace('/normal/', '/shiny/')
+                      : pokemon.sprite
+                  }
+                  alt={pokemon.name}
+                  className={styles.sprite}
                 />
-                <span>{formatDate(new Date(c.caught_at))} {formatTime(new Date(c.caught_at))}</span>
+                <span className={styles.name}>
+                  {formatPokemonName(pokemon.name)}
+                </span>
+                <div className={styles.types}>
+                  {pokemon.types.map(type => (
+                    <span
+                      key={type}
+                      className={`${styles.type} ${styles[type]}`}>
+                      {type}
+                    </span>
+                  ))}
+                </div>
+                <div className={styles.meta}>
+                  {c.gender &&
+                    !['nidoran-f', 'nidoran-m'].includes(pokemon.name) && (
+                      <span className={styles.gender}>
+                        {c.gender === 'female' ? '♀' : '♂'}
+                      </span>
+                    )}
+                  {c.shiny && <span className={styles.shinyBadge}>✦</span>}
+                </div>
+                <div className={styles.caught}>
+                  <img
+                    src={POKEMON_URLS.POKEBALL_IMAGE}
+                    alt="Pokéball"
+                    className={styles.pokeball}
+                  />
+                  <span>
+                    {formatDate(new Date(c.caught_at))}{' '}
+                    {formatTime(new Date(c.caught_at))}
+                  </span>
+                </div>
               </div>
+              <button
+                className={styles.releaseButton}
+                onClick={() => handleRelease(c.catch_id, pokemon.name)}
+                disabled={releasing === c.catch_id}>
+                {releasing === c.catch_id ? '...' : 'Release'}
+              </button>
             </div>
           );
         })}
