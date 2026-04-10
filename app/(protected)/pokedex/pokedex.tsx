@@ -7,6 +7,7 @@ import { Catch } from '@parthenonlab/types';
 
 import {
   POKEBALL_IMAGE_MAP,
+  POKEMON_TYPE_IMAGE_MAP,
   POKEMON_TYPE_MAP,
   POKEMON_URLS,
 } from '@/constants/pokemon';
@@ -117,7 +118,12 @@ export const Pokedex = () => {
               <div className={styles.types}>
                 {p.types.map(type => (
                   <span key={type} className={`${styles.type} ${styles[type]}`}>
-                    {type}
+                    <img
+                      src={POKEMON_TYPE_IMAGE_MAP[type]}
+                      alt={type}
+                      className={styles.typeImage}
+                    />
+                    <span className={styles.typeLabel}>{type}</span>
                   </span>
                 ))}
               </div>

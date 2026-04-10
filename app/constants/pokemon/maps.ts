@@ -9,6 +9,27 @@ export const POKEBALL_IMAGE_MAP: Record<string, string> = {
     'https://raw.githubusercontent.com/parthenonlab/assets/main/pokeballs/master-ball.png',
 };
 
+export const POKEMON_TYPE_IMAGE_MAP: Record<string, string> = {
+  normal: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/normal.png',
+  fire: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/fire.png',
+  water: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/water.png',
+  electric: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/electric.png',
+  grass: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/grass.png',
+  ice: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/ice.png',
+  fighting: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/fighting.png',
+  poison: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/poison.png',
+  ground: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/ground.png',
+  flying: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/flying.png',
+  psychic: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/psychic.png',
+  bug: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/bug.png',
+  rock: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/rock.png',
+  ghost: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/ghost.png',
+  dragon: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/dragon.png',
+  steel: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/steel.png',
+  fairy: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/fairy.png',
+  dark: 'https://raw.githubusercontent.com/parthenonlab/assets/main/types/dark.png',
+};
+
 export const POKEMON_NAME_MAP: Record<string, string> = {
   'nidoran-f': 'Nidoran ♀',
   'nidoran-m': 'Nidoran ♂',

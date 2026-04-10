@@ -8,6 +8,7 @@ import { Loading } from '@/components';
 import { SilverIcon } from '@/images/icons';
 import {
   POKEBALL_IMAGE_MAP,
+  POKEMON_TYPE_IMAGE_MAP,
   POKEMON_TYPE_MAP,
   POKEMON_URLS,
 } from '@/constants/pokemon';
@@ -205,7 +206,12 @@ export const PcBox = () => {
                     <span
                       key={type}
                       className={`${styles.type} ${styles[type]}`}>
-                      {type}
+                      <img
+                        src={POKEMON_TYPE_IMAGE_MAP[type]}
+                        alt={type}
+                        className={styles.typeImage}
+                      />
+                      <span className={styles.typeLabel}>{type}</span>
                     </span>
                   ))}
                 </div>
