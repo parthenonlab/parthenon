@@ -65,8 +65,8 @@
 
 .caughtBadge {
   position: absolute;
-  top: 0.4rem;
-  left: 0.5rem;
+  top: 0.65rem;
+  left: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.2rem;
@@ -87,10 +87,9 @@
   height: 16px;
 }
 
-
 .id {
   position: absolute;
-  top: 0.4rem;
+  top: 0.75rem;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.75rem;

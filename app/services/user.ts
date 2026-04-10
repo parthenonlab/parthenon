@@ -1,6 +1,9 @@
 import { User } from '@parthenonlab/types';
 import { UserModel } from '@parthenonlab/models';
 
+const BOX_UPGRADE_COST = 10000;
+const BOX_UPGRADE_SLOTS = 10;
+
 /**
  * Attempts to merge a Twitch user document into an existing Discord user account.
  * If the Discord user already has a linked Twitch ID, returns the existing record unchanged.
@@ -39,6 +42,28 @@ export const attemptUserMerge = async (payload: {
   }
 
   return discordData ?? twitchData ?? null;
+};
+
+/**
+ * Upgrades a user's PC box space by 10 slots for 10,000 cash.
+ *
+ * @param discord_id - The Discord user ID
+ * @returns The updated cash and box_space values, or null if insufficient funds
+ */
+export const upgradeBoxSpace = async (
+  discord_id: string,
+): Promise<Pick<User, 'cash' | 'box_space'> | null> => {
+  const user = await UserModel.findOne({ discord_id });
+
+  if (!user || user.cash < BOX_UPGRADE_COST) return null;
+
+  const updated = await UserModel.findOneAndUpdate(
+    { discord_id },
+    { $inc: { cash: -BOX_UPGRADE_COST, box_space: BOX_UPGRADE_SLOTS } },
+    { new: true },
+  );
+
+  return { cash: updated.cash, box_space: updated.box_space };
 };
 
 /**

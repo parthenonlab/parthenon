@@ -4,8 +4,14 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { Catch } from '@parthenonlab/types';
+
+import {
+  POKEBALL_IMAGE_MAP,
+  POKEMON_TYPE_MAP,
+  POKEMON_URLS,
+} from '@/constants/pokemon';
+
 import { Loading } from '@/components';
-import { POKEMON_TYPE_MAP, POKEMON_URLS } from '@/constants/pokemon';
 import { useFetch } from '@/hooks';
 
 import styles from './page.module.scss';
@@ -76,13 +82,13 @@ export const Pokedex = () => {
       <div className={styles.headline}>
         <h1>POKÉDEX</h1>
         <Link href="/pc-box" className={styles.pcBoxLink}>
-          PC Box →
+          Go to PC Box →
         </Link>
       </div>
       <p className={styles.subtitle}>
         Obtained:{' '}
         {Array.from(caughtMap.values()).reduce((sum, e) => sum + e.count, 0)} |
-        Unique: {caughtMap.size} / {pokemon.length}
+        Unique: {caughtMap.size}
       </p>
       <div className={styles.grid}>
         {pokemon.map(p => {
@@ -97,7 +103,7 @@ export const Pokedex = () => {
               {entry && (
                 <div className={styles.caughtBadge}>
                   <img
-                    src={POKEMON_URLS.POKEBALL_IMAGE}
+                    src={POKEBALL_IMAGE_MAP.pokeball}
                     alt="Pokéball"
                     className={styles.pokeball}
                   />

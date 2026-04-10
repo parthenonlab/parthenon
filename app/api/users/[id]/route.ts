@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
 
-import { getUser } from '@/services/user';
+import { getUser, upgradeBoxSpace } from '@/services/user';
 
 /**
  * GET /api/users/:id?method=
@@ -49,5 +49,54 @@ export const GET = withApiAuth(
         { status: 500 },
       );
     }
+  },
+);
+
+/**
+ * PATCH /api/users/:id
+ * Performs an action on a user. Currently supports: upgrade_box.
+ *
+ * @param request.body.action - The action to perform
+ * @param context.params.id - The Discord user ID
+ * @returns The updated fields, or an error response
+ */
+export const PATCH = withApiAuth(
+  async (
+    request: Request,
+    context: { params: Promise<{ id: string }> },
+    discordId: string,
+  ) => {
+    const { id } = await context.params;
+
+    if (id !== discordId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    const { action } = await request.json();
+
+    if (action === 'upgrade_box') {
+      try {
+        await connectDatabase();
+        const result = await upgradeBoxSpace(discordId);
+
+        if (!result)
+          return NextResponse.json(
+            { error: 'Insufficient funds' },
+            { status: 400 },
+          );
+
+        return NextResponse.json(result);
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error:
+              error instanceof Error ? error.message : 'Internal server error',
+          },
+          { status: 500 },
+        );
+      }
+    }
+
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   },
 );

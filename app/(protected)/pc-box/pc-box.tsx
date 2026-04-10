@@ -5,7 +5,12 @@ import { useEffect, useState } from 'react';
 
 import { Catch } from '@parthenonlab/types';
 import { Loading } from '@/components';
-import { POKEMON_TYPE_MAP, POKEMON_URLS } from '@/constants/pokemon';
+import { SilverIcon } from '@/images/icons';
+import {
+  POKEBALL_IMAGE_MAP,
+  POKEMON_TYPE_MAP,
+  POKEMON_URLS,
+} from '@/constants/pokemon';
 import { useFetch, useParthenon } from '@/hooks';
 import { formatDate, formatTime, formatPokemonName } from '@/lib/utils';
 
@@ -34,20 +39,26 @@ const fetchAllPokemon = async (): Promise<Map<number, Pokemon>> => {
   return map;
 };
 
-const getBoxCapacity = (subscriber: boolean, linked: boolean) => {
+const getBoxCapacity = (
+  subscriber: boolean,
+  linked: boolean,
+  boxSpace: number,
+) => {
   let capacity = subscriber ? 300 : 30;
   if (linked) capacity += 50;
+  capacity += boxSpace;
   return capacity;
 };
 
 export const PcBox = () => {
   const { fetchGetArray } = useFetch();
-  const { user } = useParthenon();
+  const { user, setStateUser } = useParthenon();
   const [pokemonMap, setPokemonMap] = useState<Map<number, Pokemon>>(new Map());
   const [catches, setCatches] = useState<Catch[]>([]);
   const [sort, setSort] = useState<'recent' | 'name' | 'id'>('recent');
   const [loading, setLoading] = useState(true);
   const [releasing, setReleasing] = useState<string | null>(null);
+  const [upgrading, setUpgrading] = useState(false);
 
   useEffect(() => {
     Promise.all([fetchAllPokemon(), fetchGetArray<Catch>('/api/catches')]).then(
@@ -67,8 +78,36 @@ export const PcBox = () => {
   if (loading) return <Loading />;
 
   const linked = !!(user?.discord_id && user?.twitch_id);
-  const capacity = getBoxCapacity(user?.subscriber ?? false, linked);
+  const capacity = getBoxCapacity(
+    user?.subscriber ?? false,
+    linked,
+    user?.box_space ?? 0,
+  );
   const unique = new Set(catches.map(c => c.pokemon_id)).size;
+
+  const handleUpgrade = async () => {
+    if (!user) return;
+    if (
+      !confirm(
+        'Upgrade PC Box by 10 slots for 10,000 silver? This cannot be undone.',
+      )
+    )
+      return;
+    setUpgrading(true);
+    try {
+      const res = await fetch(`/api/users/${user.discord_id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'upgrade_box' }),
+      });
+      if (res.ok) {
+        const { cash, box_space } = await res.json();
+        setStateUser({ ...user, cash, box_space });
+      }
+    } finally {
+      setUpgrading(false);
+    }
+  };
 
   const handleRelease = async (id: string, pokemonName: string) => {
     if (
@@ -100,14 +139,29 @@ export const PcBox = () => {
   return (
     <div className={styles.pcBox}>
       <div className={styles.headline}>
+        <div className={styles.upgradeSection}>
+          <p className={styles.upgradeInfo}>
+            Balance: {user?.cash?.toLocaleString() ?? 0}{' '}
+            <SilverIcon size={14} />
+          </p>
+          <p className={styles.upgradeInfo}>
+            Available Space: {capacity - catches.length} / {capacity}
+          </p>
+          <button
+            className={styles.upgradeButton}
+            onClick={handleUpgrade}
+            disabled={upgrading || (user?.cash ?? 0) < 10000}>
+            {upgrading ? '...' : 'Add 10 Slots — 10,000'}
+            <SilverIcon size={14} />
+          </button>
+        </div>
         <h1>PC BOX</h1>
         <Link href="/pokedex" className={styles.pokedexLink}>
-          Pokédex →
+          Go to Pokédex →
         </Link>
       </div>
       <p className={styles.subtitle}>
-        Obtained: {catches.length} | Unique: {unique} | Available Space:{' '}
-        {capacity - catches.length}
+        Obtained: {catches.length} | Unique: {unique}
       </p>
       <div className={styles.sortButtons}>
         {(['recent', 'name', 'id'] as const).map(option => (
@@ -130,6 +184,9 @@ export const PcBox = () => {
           return (
             <div key={c.catch_id} className={styles.slot}>
               <div className={`${styles.card} ${c.shiny ? styles.shiny : ''}`}>
+                <span className={styles.dexId}>
+                  #{String(pokemon.id).padStart(4, '0')}
+                </span>
                 {c.favorite && <span className={styles.favorite}>★</span>}
                 <img
                   src={
@@ -163,7 +220,10 @@ export const PcBox = () => {
                 </div>
                 <div className={styles.caught}>
                   <img
-                    src={POKEMON_URLS.POKEBALL_IMAGE}
+                    src={
+                      POKEBALL_IMAGE_MAP[c.ball_used] ??
+                      POKEBALL_IMAGE_MAP.pokeball
+                    }
                     alt="Pokéball"
                     className={styles.pokeball}
                   />

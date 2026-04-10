@@ -1,3 +1,14 @@
+export const POKEBALL_IMAGE_MAP: Record<string, string> = {
+  pokeball:
+    'https://raw.githubusercontent.com/parthenonlab/assets/main/pokeballs/poke-ball.png',
+  greatball:
+    'https://raw.githubusercontent.com/parthenonlab/assets/main/pokeballs/great-ball.png',
+  ultraball:
+    'https://raw.githubusercontent.com/parthenonlab/assets/main/pokeballs/ultra-ball.png',
+  masterball:
+    'https://raw.githubusercontent.com/parthenonlab/assets/main/pokeballs/master-ball.png',
+};
+
 export const POKEMON_NAME_MAP: Record<string, string> = {
   'nidoran-f': 'Nidoran ♀',
   'nidoran-m': 'Nidoran ♂',
