@@ -29,66 +29,29 @@ export const updateBlackjackGame = async (
 
   let cashDelta = 0;
 
+  const updatedStats = { ...stats, totalPlays: stats.totalPlays + 1 };
+
   if (status === BlackjackStatus.Blackjack) {
     cashDelta = isDouble ? bet + bet * 2 : bet + Math.round(bet * 1.5);
-
-    await StatsModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalBlackjack: stats.totalBlackjack + 1,
-            totalPlays: stats.totalPlays + 1,
-            totalWon: stats.totalWon + 1,
-          },
-        },
-      },
-      { upsert: true },
-    );
+    updatedStats.totalBlackjack = stats.totalBlackjack + 1;
+    updatedStats.totalWon = stats.totalWon + 1;
   } else if (
     status === BlackjackStatus.Win ||
     status === BlackjackStatus.DealerBust
   ) {
     cashDelta = isDouble ? bet + bet * 2 : bet * 2;
-
-    await StatsModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalPlays: stats.totalPlays + 1,
-            totalWon: stats.totalWon + 1,
-          },
-        },
-      },
-      { upsert: true },
-    );
+    updatedStats.totalWon = stats.totalWon + 1;
   } else if (status === BlackjackStatus.Push) {
     cashDelta = bet;
   } else {
     if (isDouble) cashDelta = -bet;
   }
 
-  if (
-    status === BlackjackStatus.Push ||
-    status === BlackjackStatus.Lose ||
-    status === BlackjackStatus.Bust
-  ) {
-    await StatsModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalPlays: stats.totalPlays + 1,
-          },
-        },
-      },
-      { upsert: true },
-    );
-  }
+  await StatsModel.findOneAndUpdate(
+    { discord_id: discordId },
+    { $set: { [GameCode.Blackjack]: updatedStats } },
+    { upsert: true },
+  );
 
   await ActiveGameModel.findOneAndDelete({
     discord_id: discordId,

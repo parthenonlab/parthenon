@@ -222,10 +222,10 @@ const Wordle = () => {
 
   const fillArray: WordleGuess[] =
     fillLength > 0
-      ? Array(fillLength).fill({
+      ? Array.from({ length: fillLength }, () => ({
           word: '',
-          result: initialGuessResult,
-        })
+          result: [...initialGuessResult],
+        }))
       : [];
 
   const currentGuessArray: WordleGuess[] =

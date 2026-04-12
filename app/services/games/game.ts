@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from 'uuid';
-import { currentUser } from '@clerk/nextjs/server';
 
 import { UserModel } from '@parthenonlab/models';
 import { GameCode } from '@/enums/games';
@@ -17,21 +16,10 @@ import { ActiveGameModel } from '@/models/game';
 import { updateBlackjackGame } from './blackjack';
 import { updateWordleGame } from './wordle';
 
-const getDiscordId = async () => {
-  const user = await currentUser();
-
-  const discordAccount = user?.externalAccounts.find(
-    account => account.provider === 'oauth_discord',
-  );
-
-  return discordAccount?.providerUserId;
-};
-
 export const createActiveGame = async (
   payload: ActiveGameRequest,
+  discordId: string,
 ): Promise<Partial<ActiveGame> | null> => {
-  const discordId = await getDiscordId();
-  if (!discordId) return null;
 
   const key = uuidv4();
   const sessionKey = payload.data.sessionKey!;
@@ -86,10 +74,8 @@ export const getActiveGames = async (id: string): Promise<ActiveGame[]> => {
 
 export const updateActiveGame = async (
   payload: ActiveGameRequest,
+  discordId: string,
 ): Promise<Partial<ActiveGame> | null> => {
-  const discordId = await getDiscordId();
-  if (!discordId) return null;
-
   const game = await ActiveGameModel.findOne({
     discord_id: discordId,
     code: payload.code,

@@ -33,7 +33,7 @@ const generateAnswer = () => {
 const getLetterResult = (
   guess: string[],
   answer: string,
-  keyResults: { [key: string]: string }
+  keyResults: { [key: string]: WordleKeyStatus }
 ): WordleKeyStatus[] => {
   const result: WordleKeyStatus[] = Array(guess.length).fill(
     WordleKeyStatus.Absent

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { currentUser } from '@clerk/nextjs/server';
 
 /**
  * Wraps a Next.js route handler with Clerk authentication and Discord account verification.
@@ -20,12 +20,6 @@ export const withApiAuth = <T extends Record<string, string> = {}>(
   ) => Promise<NextResponse>,
 ) => {
   return async (req: NextRequest, context: { params: Promise<T> }) => {
-    const { userId } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const user = await currentUser();
     const discordAccount = user?.externalAccounts.find(
       account => account.provider === 'oauth_discord',
