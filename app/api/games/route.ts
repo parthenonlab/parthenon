@@ -22,7 +22,7 @@ export const PATCH = withApiAuth(
   async (
     request: NextRequest,
     _context: { params: Promise<{}> },
-    _discordId: string,
+    discordId: string,
   ) => {
     try {
       await connectDatabase();
@@ -42,7 +42,7 @@ export const PATCH = withApiAuth(
         );
       }
 
-      const game = await updateActiveGame(payload);
+      const game = await updateActiveGame(payload, discordId);
 
       return NextResponse.json(game);
     } catch (error) {
@@ -73,7 +73,7 @@ export const POST = withApiAuth(
   async (
     request: NextRequest,
     _context: { params: Promise<{}> },
-    _discordId: string,
+    discordId: string,
   ) => {
     try {
       await connectDatabase();
@@ -91,7 +91,7 @@ export const POST = withApiAuth(
         );
       }
 
-      const game = await createActiveGame(payload);
+      const game = await createActiveGame(payload, discordId);
 
       return NextResponse.json(game, { status: 201 });
     } catch (error) {

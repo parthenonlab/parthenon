@@ -14,12 +14,12 @@ export const useBlackjack = () => {
     (bet: number | null) => {
       dispatch({ type: 'BET_UPDATE', payload: bet });
     },
-    [dispatch]
+    []
   );
 
   const onReset = useCallback(() => {
     dispatch({ type: 'GAME_RESET' });
-  }, [dispatch]);
+  }, []);
 
   const onPlay = useCallback(
     (bet: number) => {
@@ -27,7 +27,7 @@ export const useBlackjack = () => {
       const deck: PlayCard[] = shuffleDeck([...newDeck, ...newDeck]);
       dispatch({ type: 'GAME_START', payload: { bet, deck } });
     },
-    [dispatch]
+    []
   );
 
   const onSetStatus = useCallback(() => {
@@ -36,15 +36,15 @@ export const useBlackjack = () => {
 
   const onDouble = useCallback(() => {
     dispatch({ type: 'DOUBLE' });
-  }, [dispatch]);
+  }, []);
 
   const onHit = useCallback(() => {
     dispatch({ type: 'HIT' });
-  }, [dispatch]);
+  }, []);
 
   const onStand = useCallback(() => {
     dispatch({ type: 'STAND' });
-  }, [dispatch]);
+  }, []);
 
   return {
     ...state,

@@ -102,7 +102,7 @@ export const GameTable = ({
       let currentHand = [...playerLastHand];
       if (hand === 'dealer') currentHand = [...dealerLastHand];
 
-      for await (const card of cards) {
+      for (const card of cards) {
         await delay(500);
 
         currentHand.push(card);
