@@ -7,6 +7,15 @@ export class DecryptionError extends Error {
   }
 }
 
+export class GameError extends Error {
+  status: number;
+  constructor(message: string, status = 400) {
+    super(message);
+    this.name = 'GameError';
+    this.status = status;
+  }
+}
+
 const algorithm = 'aes-256-cbc';
 const encryptionKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY;
 

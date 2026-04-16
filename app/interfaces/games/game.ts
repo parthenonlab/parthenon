@@ -16,3 +16,9 @@ export interface ActiveGameRequest {
   key?: string;
   data: { sessionKey?: string; sessionCode?: string };
 }
+
+export interface ActiveGameResult<TStats = unknown> {
+  key: string;
+  cashDelta?: number;
+  stats?: TStats;
+}

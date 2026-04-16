@@ -18,8 +18,8 @@ export const CardBox = ({ order, animate, rank, size, suit }: CardBoxProps) => {
 
   let animateClass = '';
 
-  if (order > -1) {
-    animateClass += styles[`order-${order}`];
+  if (order !== undefined) {
+    if (order > 0) animateClass += styles[`order-${order}`];
 
     if (animate === 'up') {
       animateClass += ` ${styles.animateUp}`;

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
 import { createActiveGame, updateActiveGame } from '@/services/games';
-import { DecryptionError } from '@/lib/utils';
+import { DecryptionError, GameError } from '@/lib/utils';
 import { GameCode } from '@/enums/games';
 
 const validCodes = Object.values(GameCode);
@@ -48,6 +48,9 @@ export const PATCH = withApiAuth(
     } catch (error) {
       if (error instanceof DecryptionError) {
         return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      if (error instanceof GameError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
       }
       return NextResponse.json(
         {
@@ -97,6 +100,9 @@ export const POST = withApiAuth(
     } catch (error) {
       if (error instanceof DecryptionError) {
         return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      if (error instanceof GameError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
       }
       return NextResponse.json(
         {

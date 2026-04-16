@@ -10,12 +10,6 @@ export enum BlackjackStatus {
   WinPending = 'WIN PENDING',
 }
 
-export enum BlackjackAnimation {
-  Standby,
-  Ongoing,
-  Done,
-}
-
 export enum CardSize {
   Large, //  Default
   Medium, // Size for 5 cards

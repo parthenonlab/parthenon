@@ -9,7 +9,7 @@ import { BlackjackIcon, WordleIcon } from '@/images/icons';
 
 import styles from './page.module.scss';
 
-const Games = () => {
+export const Games = () => {
   const { isUserFetched, user } = useParthenon();
 
   if (!isUserFetched) return <Loading />;
@@ -36,5 +36,3 @@ const Games = () => {
     </div>
   );
 };
-
-export default Games;

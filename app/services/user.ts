@@ -80,3 +80,38 @@ export const getUser = async (
   const user = await UserModel.findOne({ [`${method}_id`]: id });
   return user ? (user.toObject() as User) : null;
 };
+
+/**
+ * Atomically deducts an amount from a user's cash balance if they have sufficient funds.
+ * The balance check and deduction are a single operation, preventing race conditions.
+ *
+ * @param discordId - The Discord user ID
+ * @param amount - The amount to deduct
+ * @returns true if the deduction succeeded, false if the user was not found or had insufficient funds
+ */
+export const deductCash = async (
+  discordId: string,
+  amount: number,
+): Promise<boolean> => {
+  const user = await UserModel.findOneAndUpdate(
+    { discord_id: discordId, cash: { $gte: amount } },
+    { $inc: { cash: -amount } },
+  );
+  return !!user;
+};
+
+/**
+ * Adds an amount to a user's cash balance.
+ *
+ * @param discordId - The Discord user ID
+ * @param amount - The amount to add
+ */
+export const addCash = async (
+  discordId: string,
+  amount: number,
+): Promise<void> => {
+  await UserModel.findOneAndUpdate(
+    { discord_id: discordId },
+    { $inc: { cash: amount } },
+  );
+};

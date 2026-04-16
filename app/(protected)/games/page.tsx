@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import Games from './games';
+import { Games } from './games';
 
 export const metadata: Metadata = {
   title: 'Parthenon | Games',

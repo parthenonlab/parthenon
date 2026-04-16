@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import Commands from './commands';
+import { Commands } from './commands';
 
 export const metadata: Metadata = {
   title: 'Parthenon | Commands',

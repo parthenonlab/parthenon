@@ -1,26 +1,25 @@
 'use client';
 
 import { redirect } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { Stats as StatsData, WordleStats } from '@parthenonlab/types';
 
 import { API_URLS } from '@/constants/api';
 import { INITIAL_WORDLE } from '@/constants/stats';
 import { MAX_ATTEMPTS, WORD_LENGTH, WORD_LIST } from '@/constants/wordle';
-import { GameCode, GamePage } from '@/enums/games';
-import { WordleKeyStatus, WordleStatus } from '@/enums/games';
+import { GameCode, GamePage, WordleKeyStatus, WordleStatus } from '@/enums/games';
 
 import { useFetch, useModal, useParthenon, useWordle } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
-import { ActiveGame, ActiveGameRequest, WordleGuess } from '@/interfaces/games';
+import { ActiveGameRequest, ActiveGameResult, WordleGuess } from '@/interfaces/games';
 import { encrypt } from '@/lib/utils';
 
 import { Loading, Modal } from '@/components';
 import { AnswerGrid, Keyboard, Notice, Rules, Stats } from './components';
 import styles from '../shared/styles/page.module.scss';
 
-const Wordle = () => {
+export const Wordle = () => {
   const { isUserFetched, setStateUser, user } = useParthenon();
   const { modalType, openModal, closeModal } = useModal<'rules' | 'stats'>();
   const { fetchGet, fetchPatch, fetchPost } = useFetch();
@@ -38,33 +37,29 @@ const Wordle = () => {
     onDelete,
     onEnter,
     onKey,
+    onNetworkError,
     onPlay,
     onReset,
     onResume,
   } = useWordle();
 
   const [isGameReady, setIsGameReady] = useState(false);
-  const [isStatsUpdated, setIsStatsUpdated] = useState(false);
   const [page, setPage] = useState(GamePage.Overview);
 
   const answerRef = useRef(answer);
   const currentGuessRef = useRef(currentGuess);
-  const gameKeyRef = useRef<string | undefined>(null);
+  const gameKeyRef = useRef<string | null>(null);
   const gameStatusRef = useRef(status);
+
+  currentGuessRef.current = currentGuess;
+  gameStatusRef.current = status;
 
   const fetchStats = useCallback(async () => {
     if (!user?.discord_id) return;
 
-    try {
-      const data = await fetchGet<StatsData>(
-        `${API_URLS.STATS}/${user.discord_id}`,
-      );
-      setStats(data?.[GameCode.Wordle] ?? INITIAL_WORDLE);
-    } catch {
-      setStats(INITIAL_WORDLE);
-    } finally {
-      setIsStatsFetched(true);
-    }
+    const data = await fetchGet<StatsData>(`${API_URLS.STATS}/${user.discord_id}`);
+    setStats(data?.[GameCode.Wordle] ?? INITIAL_WORDLE);
+    setIsStatsFetched(true);
   }, [fetchGet, user]);
 
   useEffect(() => {
@@ -72,8 +67,8 @@ const Wordle = () => {
     fetchStats();
   }, [fetchStats, isStatsFetched, isUserFetched]);
 
-  const getGame = useCallback(async () => {
-    const game = await fetchPost<ActiveGame, ActiveGameRequest>(
+  const getGame = useCallback(async (): Promise<boolean> => {
+    const game = await fetchPost<ActiveGameResult<WordleStats>, ActiveGameRequest>(
       API_URLS.GAMES,
       {
         code: GameCode.Wordle,
@@ -83,15 +78,20 @@ const Wordle = () => {
       },
     );
 
-    if (game) gameKeyRef.current = game.key;
-    setIsGameReady(true);
+    if (game) {
+      gameKeyRef.current = game.key;
+      setIsGameReady(true);
+      return true;
+    }
+
+    return false;
   }, [fetchPost]);
 
   const updateGame = useCallback(
-    async (guess: string) => {
-      if (!gameKeyRef.current) return;
+    async (guess: string): Promise<ActiveGameResult<WordleStats> | null> => {
+      if (!gameKeyRef.current) return null;
 
-      const game = await fetchPatch<ActiveGame, ActiveGameRequest>(
+      const result = await fetchPatch<ActiveGameResult<WordleStats>, ActiveGameRequest>(
         API_URLS.GAMES,
         {
           key: gameKeyRef.current,
@@ -102,7 +102,8 @@ const Wordle = () => {
         },
       );
 
-      if (game) gameKeyRef.current = game.key;
+      if (result) gameKeyRef.current = result.key;
+      return result;
     },
     [fetchPatch],
   );
@@ -123,8 +124,14 @@ const Wordle = () => {
     if (currentGuessRef.current.length < WORD_LENGTH) return;
     if (!WORD_LIST.includes(currentGuessRef.current)) return;
 
-    updateGame(currentGuessRef.current);
-  }, [onEnter, onPlay, updateGame]);
+    const result = await updateGame(currentGuessRef.current);
+    if (!result) {
+      onNetworkError();
+      return;
+    }
+    if (result.stats) setStats(result.stats);
+    if (result.cashDelta && user) setStateUser({ ...user, cash: user.cash + result.cashDelta });
+  }, [onEnter, onNetworkError, onPlay, setStateUser, updateGame, user]);
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
@@ -154,95 +161,43 @@ const Wordle = () => {
   useEffect(() => {
     if (answer.length === 0 || answer === answerRef.current) return;
     answerRef.current = answer;
-    getGame();
-  }, [answer, getGame]);
-
-  useEffect(() => {
-    currentGuessRef.current = currentGuess;
-  }, [currentGuess]);
-
-  useEffect(() => {
-    gameStatusRef.current = status;
-  }, [status]);
-
-  useEffect(() => {
-    if (!user || !user.discord_id || isStatsUpdated) return;
-
-    if (status === WordleStatus.Answered) {
-      setIsStatsUpdated(true);
-
-      const newDistribution = [...stats.distribution];
-      newDistribution[guesses.length - 1] += 1;
-
-      setStats({
-        currentStreak: stats.currentStreak + 1,
-        distribution: newDistribution,
-        maxStreak: Math.max(stats.maxStreak, stats.currentStreak + 1),
-        totalPlays: stats.totalPlays + 1,
-        totalWon: stats.totalWon + 1,
-      });
-
-      if (reward) {
-        setStateUser({
-          ...user,
-          cash: user.cash + reward,
-        });
+    (async () => {
+      const success = await getGame();
+      if (!success) {
+        onReset();
+        setPage(GamePage.Overview);
       }
-    } else if (status === WordleStatus.Completed) {
-      setIsStatsUpdated(true);
+    })();
+  }, [answer, getGame, onReset]);
 
-      setStats({
-        ...stats,
-        currentStreak: 0,
-        totalPlays: stats.totalPlays + 1,
-      });
-    }
-  }, [
-    guesses.length,
-    isStatsUpdated,
-    reward,
-    setStateUser,
-    stats,
-    status,
-    user,
-  ]);
-
-  useEffect(() => {
-    if (status === WordleStatus.Playing && isStatsUpdated) {
-      setIsStatsUpdated(false);
-    }
-  }, [status, isStatsUpdated]);
+  const handleBack = useCallback(() => {
+    onReset();
+    setPage(GamePage.Overview);
+  }, [onReset]);
 
   if (isUserFetched && (!user || !user?.discord_id)) redirect('/dashboard');
 
   const initialGuessResult = Array(WORD_LENGTH).fill(WordleKeyStatus.Default);
 
-  // + 1 to take into account the current guess
-  const fillLength = MAX_ATTEMPTS - (guesses.length + 1);
+  const guessesArray = useMemo<WordleGuess[]>(() => {
+    // + 1 to take into account the current guess
+    const fillLength = MAX_ATTEMPTS - (guesses.length + 1);
 
-  const fillArray: WordleGuess[] =
-    fillLength > 0
-      ? Array.from({ length: fillLength }, () => ({
-          word: '',
-          result: [...initialGuessResult],
-        }))
-      : [];
+    const fillArray: WordleGuess[] =
+      fillLength > 0
+        ? Array.from({ length: fillLength }, () => ({
+            word: '',
+            result: [...initialGuessResult],
+          }))
+        : [];
 
-  const currentGuessArray: WordleGuess[] =
-    guesses.length < MAX_ATTEMPTS
-      ? [
-          {
-            word: currentGuess,
-            result: initialGuessResult,
-          },
-        ]
-      : [];
+    const currentGuessArray: WordleGuess[] =
+      guesses.length < MAX_ATTEMPTS
+        ? [{ word: currentGuess, result: initialGuessResult }]
+        : [];
 
-  const guessesArray: WordleGuess[] = [
-    ...guesses,
-    ...currentGuessArray,
-    ...fillArray,
-  ];
+    return [...guesses, ...currentGuessArray, ...fillArray];
+  }, [currentGuess, guesses, initialGuessResult]);
 
   return (
     <div className={styles.wordle}>
@@ -250,20 +205,10 @@ const Wordle = () => {
         <div className={styles.leftButtons}>
           {page !== GamePage.Overview && (
             <>
-              <button
-                className={styles.back}
-                onClick={() => {
-                  onReset();
-                  setPage(GamePage.Overview);
-                }}>
+              <button className={styles.back} onClick={handleBack}>
                 <BackIcon />
               </button>
-              <button
-                className={styles.backDesktop}
-                onClick={() => {
-                  onReset();
-                  setPage(GamePage.Overview);
-                }}>
+              <button className={styles.backDesktop} onClick={handleBack}>
                 <BackIcon />
                 <span>QUIT</span>
               </button>
@@ -353,5 +298,3 @@ const Wordle = () => {
     </div>
   );
 };
-
-export default Wordle;

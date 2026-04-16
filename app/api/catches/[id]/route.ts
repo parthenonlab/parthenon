@@ -26,7 +26,7 @@ export const DELETE = withApiAuth<{ id: string }>(
         return NextResponse.json({ error: 'Not found' }, { status: 404 });
       }
 
-      return new NextResponse(null, { status: 204 });
+      return NextResponse.json(deleted);
     } catch (error) {
       return NextResponse.json(
         {

@@ -20,4 +20,5 @@ export type WordleAction =
   | { type: 'enter' }
   | { type: 'key'; letter: string }
   | { type: 'reset' }
-  | { type: 'resume' };
+  | { type: 'resume' }
+  | { type: 'network_error' };
