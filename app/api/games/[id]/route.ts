@@ -4,6 +4,7 @@ import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
 import { deleteActiveGame, getActiveGames } from '@/services/games';
 import { GameCode } from '@/enums/games';
+import { GameError } from '@/lib/utils';
 
 /**
  * GET /api/games/:id
@@ -79,9 +80,12 @@ export const DELETE = withApiAuth(
     try {
       await connectDatabase();
 
-      const games = await deleteActiveGame(id, code as GameCode);
-      return NextResponse.json(games);
+      const game = await deleteActiveGame(id, code as GameCode);
+      return NextResponse.json(game);
     } catch (error) {
+      if (error instanceof GameError) {
+        return NextResponse.json({ error: error.message }, { status: error.status });
+      }
       return NextResponse.json(
         {
           error:

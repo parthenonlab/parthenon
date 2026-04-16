@@ -14,16 +14,10 @@ import {
 
 import { Loading } from '@/components';
 import { useFetch } from '@/hooks';
-
-import styles from './page.module.scss';
+import { Pokemon } from '@/interfaces/games';
 import { formatPokemonName } from '@/lib/utils';
 
-interface Pokemon {
-  id: number;
-  name: string;
-  sprite: string;
-  types: string[];
-}
+import styles from './page.module.scss';
 
 interface CaughtEntry {
   caughtAt: Date;

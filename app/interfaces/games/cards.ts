@@ -24,8 +24,8 @@ export interface PlayCard {
 }
 
 export interface CardBoxProps extends PlayCard {
-  order: number;
-  animate: 'up' | 'down' | null;
+  order: number | undefined;
+  animate: 'up' | 'down' | undefined;
 }
 
 export type CardDeck = PlayCard[];

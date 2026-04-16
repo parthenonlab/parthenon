@@ -188,3 +188,44 @@ describe('resume', () => {
     expect(wordleReducer(state, { type: 'resume' }).status).toBe(WordleStatus.Playing);
   });
 });
+
+describe('play', () => {
+  it('sets status to Playing', () => {
+    const result = wordleReducer(playingState('crane'), { type: 'play' });
+    expect(result.status).toBe(WordleStatus.Playing);
+  });
+
+  it('picks an answer from the answer list', () => {
+    const result = wordleReducer(playingState('crane'), { type: 'play' });
+    expect(['crane', 'brain']).toContain(result.answer);
+  });
+
+  it('resets currentGuess, guesses, keyResults, and reward', () => {
+    const state = playingState('crane', {
+      currentGuess: 'bra',
+      guesses: [{ word: 'brain', result: [] }],
+      keyResults: { b: WordleKeyStatus.Absent },
+      reward: 500,
+    });
+    const result = wordleReducer(state, { type: 'play' });
+    expect(result.currentGuess).toBe('');
+    expect(result.guesses).toHaveLength(0);
+    expect(result.keyResults).toEqual({});
+    expect(result.reward).toBeNull();
+  });
+});
+
+describe('network_error', () => {
+  it('sets status to NetworkError', () => {
+    const state = playingState('crane');
+    expect(wordleReducer(state, { type: 'network_error' }).status).toBe(WordleStatus.NetworkError);
+  });
+
+  it('does not modify other state fields', () => {
+    const state = playingState('crane', { currentGuess: 'br', guesses: [{ word: 'brain', result: [] }] });
+    const result = wordleReducer(state, { type: 'network_error' });
+    expect(result.currentGuess).toBe('br');
+    expect(result.guesses).toHaveLength(1);
+    expect(result.answer).toBe('crane');
+  });
+});

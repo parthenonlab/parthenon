@@ -7,7 +7,7 @@ import { DiscordIcon, TwitchIcon } from '@/images/icons';
 
 import styles from './page.module.scss';
 
-const Commands = () => {
+export const Commands = () => {
   const [mobileDisplay, setMobileDisplay] = useState<'discord' | 'twitch'>(
     'discord'
   );
@@ -73,5 +73,3 @@ const Commands = () => {
     </div>
   );
 };
-
-export default Commands;

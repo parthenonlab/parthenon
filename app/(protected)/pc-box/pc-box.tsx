@@ -4,25 +4,21 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { Catch } from '@parthenonlab/types';
-import { Loading } from '@/components';
-import { SilverIcon } from '@/images/icons';
+
 import {
   POKEBALL_IMAGE_MAP,
   POKEMON_TYPE_IMAGE_MAP,
   POKEMON_TYPE_MAP,
   POKEMON_URLS,
 } from '@/constants/pokemon';
+
+import { Loading } from '@/components';
 import { useFetch, useParthenon } from '@/hooks';
+import { SilverIcon } from '@/images/icons';
+import { Pokemon } from '@/interfaces/games';
 import { formatDate, formatTime, formatPokemonName } from '@/lib/utils';
 
 import styles from './page.module.scss';
-
-interface Pokemon {
-  id: number;
-  name: string;
-  sprite: string;
-  types: string[];
-}
 
 const fetchAllPokemon = async (): Promise<Map<number, Pokemon>> => {
   const listRes = await fetch(`${POKEMON_URLS.POKEAPI}?limit=151`);
@@ -52,7 +48,7 @@ const getBoxCapacity = (
 };
 
 export const PcBox = () => {
-  const { fetchGetArray } = useFetch();
+  const { fetchDelete, fetchGetArray, fetchPatch } = useFetch();
   const { user, setStateUser } = useParthenon();
   const [pokemonMap, setPokemonMap] = useState<Map<number, Pokemon>>(new Map());
   const [catches, setCatches] = useState<Catch[]>([]);
@@ -96,15 +92,11 @@ export const PcBox = () => {
       return;
     setUpgrading(true);
     try {
-      const res = await fetch(`/api/users/${user.discord_id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'upgrade_box' }),
-      });
-      if (res.ok) {
-        const { cash, box_space } = await res.json();
-        setStateUser({ ...user, cash, box_space });
-      }
+      const res = await fetchPatch<
+        { cash: number; box_space: number },
+        { action: string }
+      >(`/api/users/${user.discord_id}`, { action: 'upgrade_box' });
+      if (res) setStateUser({ ...user, ...res });
     } finally {
       setUpgrading(false);
     }
@@ -119,8 +111,8 @@ export const PcBox = () => {
       return;
     setReleasing(id);
     try {
-      const res = await fetch(`/api/catches/${id}`, { method: 'DELETE' });
-      if (res.ok) setCatches(prev => prev.filter(c => c.catch_id !== id));
+      const res = await fetchDelete(`/api/catches/${id}`);
+      if (res) setCatches(prev => prev.filter(c => c.catch_id !== id));
     } finally {
       setReleasing(null);
     }

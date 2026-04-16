@@ -1,22 +1,27 @@
 import { v4 as uuidv4 } from 'uuid';
 
+import { BlackjackStats } from '@parthenonlab/types';
+
 import { INITIAL_BLACKJACK } from '@/constants/stats';
 import { BlackjackStatus, GameCode } from '@/enums/games';
 import {
   ActiveGame,
   ActiveGameRequest,
+  ActiveGameResult,
   BlackjackGameData,
 } from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
+import { UserModel } from '@parthenonlab/models';
+
 import { ActiveGameModel } from '@/models/game';
-import { StatsModel, UserModel } from '@parthenonlab/models';
+import { getStats, updateStats } from '@/services/stats';
 
 export const updateBlackjackGame = async (
   game: ActiveGame,
   discordId: string,
   payload: ActiveGameRequest,
-): Promise<Partial<ActiveGame> | null> => {
+): Promise<ActiveGameResult<BlackjackStats>> => {
   const updatedKey = uuidv4();
   const statusString = decrypt(payload.data.sessionCode!);
   const status = statusString.split('-')[0];
@@ -24,7 +29,7 @@ export const updateBlackjackGame = async (
 
   const { bet } = game.data as BlackjackGameData;
 
-  const userStats = await StatsModel.findOne({ discord_id: discordId });
+  const userStats = await getStats(discordId);
   const stats = userStats?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK;
 
   let cashDelta = 0;
@@ -47,11 +52,7 @@ export const updateBlackjackGame = async (
     if (isDouble) cashDelta = -bet;
   }
 
-  await StatsModel.findOneAndUpdate(
-    { discord_id: discordId },
-    { $set: { [GameCode.Blackjack]: updatedStats } },
-    { upsert: true },
-  );
+  await updateStats(GameCode.Blackjack, discordId, updatedStats);
 
   await ActiveGameModel.findOneAndDelete({
     discord_id: discordId,
@@ -65,5 +66,5 @@ export const updateBlackjackGame = async (
     );
   }
 
-  return { key: updatedKey };
+  return { key: updatedKey, cashDelta, stats: updatedStats };
 };

@@ -1,17 +1,18 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { UserModel } from '@parthenonlab/models';
 import { GameCode } from '@/enums/games';
 
 import {
   ActiveGame,
   ActiveGameRequest,
+  ActiveGameResult,
   BlackjackGameData,
   WordleGameData,
 } from '@/interfaces/games';
 
-import { decrypt } from '@/lib/utils';
+import { decrypt, GameError } from '@/lib/utils';
 import { ActiveGameModel } from '@/models/game';
+import { addCash, deductCash } from '@/services/user';
 
 import { updateBlackjackGame } from './blackjack';
 import { updateWordleGame } from './wordle';
@@ -19,51 +20,55 @@ import { updateWordleGame } from './wordle';
 export const createActiveGame = async (
   payload: ActiveGameRequest,
   discordId: string,
-): Promise<Partial<ActiveGame> | null> => {
-
+): Promise<Partial<ActiveGame>> => {
   const key = uuidv4();
   const sessionKey = payload.data.sessionKey!;
 
-  let data: BlackjackGameData | WordleGameData;
+  if (payload.code === GameCode.Wordle) {
+    const data: WordleGameData = { answer: decrypt(sessionKey), guesses: [] };
+
+    await ActiveGameModel.findOneAndReplace(
+      { discord_id: discordId, code: payload.code },
+      { discord_id: discordId, code: payload.code, key, data },
+      { upsert: true },
+    );
+
+    return { key };
+  }
 
   if (payload.code === GameCode.Blackjack) {
     const bet = parseInt(decrypt(sessionKey), 10);
+    if (isNaN(bet) || bet <= 0) throw new GameError('Invalid bet');
 
-    if (isNaN(bet) || bet <= 0) return null;
+    const deducted = await deductCash(discordId, bet);
+    if (!deducted) throw new GameError('Insufficient funds', 422);
 
-    const user = await UserModel.findOne({ discord_id: discordId });
-    if (!user || user.cash < bet) return null;
+    const data: BlackjackGameData = { bet };
 
-    data = { bet };
-  } else if (payload.code === GameCode.Wordle) {
-    data = { answer: decrypt(sessionKey), guesses: [] };
-  } else {
-    return null;
+    try {
+      await ActiveGameModel.findOneAndReplace(
+        { discord_id: discordId, code: payload.code },
+        { discord_id: discordId, code: payload.code, key, data },
+        { upsert: true },
+      );
+    } catch (error) {
+      await addCash(discordId, bet);
+      throw error;
+    }
+
+    return { key };
   }
 
-  await ActiveGameModel.findOneAndReplace(
-    { discord_id: discordId, code: payload.code },
-    { discord_id: discordId, code: payload.code, key, data },
-    { upsert: true },
-  );
-
-  if (payload.code === GameCode.Blackjack) {
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: -(data as BlackjackGameData).bet } },
-    );
-  }
-
-  return { key };
+  throw new GameError('Unknown game code');
 };
 
 export const deleteActiveGame = async (
   id: string,
   code: GameCode,
-): Promise<Partial<ActiveGame> | null> => {
+): Promise<Partial<ActiveGame>> => {
   const game = await ActiveGameModel.findOneAndDelete({ discord_id: id, code });
 
-  if (!game) return null;
+  if (!game) throw new GameError('Game not found', 404);
   return { key: game.key };
 };
 
@@ -75,14 +80,14 @@ export const getActiveGames = async (id: string): Promise<ActiveGame[]> => {
 export const updateActiveGame = async (
   payload: ActiveGameRequest,
   discordId: string,
-): Promise<Partial<ActiveGame> | null> => {
+): Promise<ActiveGameResult> => {
   const game = await ActiveGameModel.findOne({
     discord_id: discordId,
     code: payload.code,
   });
 
-  if (!game) return null;
-  if (game.key !== payload.key) return null;
+  if (!game) throw new GameError('Game not found', 404);
+  if (game.key !== payload.key) throw new GameError('Invalid session key', 409);
 
   const activeGame = game.toObject() as ActiveGame;
 
@@ -90,7 +95,7 @@ export const updateActiveGame = async (
     return updateBlackjackGame(activeGame, discordId, payload);
   } else if (payload.code === GameCode.Wordle) {
     return updateWordleGame(activeGame, discordId, payload);
-  } else {
-    return null;
   }
+
+  throw new GameError('Unknown game code');
 };

@@ -23,7 +23,8 @@ export const Notice = ({
   useEffect(() => {
     if (
       status === WordleStatus.InvalidGuess ||
-      status === WordleStatus.InvalidWord
+      status === WordleStatus.InvalidWord ||
+      status === WordleStatus.NetworkError
     ) {
       const timer = setTimeout(onResume, 750);
       return () => clearTimeout(timer);
@@ -62,6 +63,11 @@ export const Notice = ({
         <p className={`${styles.note} ${styles.noteFade}`}>
           <span className={styles.answer}>{currentGuess}</span>
           <span>is not in the dictionary.</span>
+        </p>
+      )}
+      {status === WordleStatus.NetworkError && (
+        <p className={`${styles.note} ${styles.noteFade}`}>
+          <span>Could not sync guess. Check your connection.</span>
         </p>
       )}
     </div>

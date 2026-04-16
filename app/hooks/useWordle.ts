@@ -1,6 +1,4 @@
-'use client';
-
-import { useCallback, useReducer } from 'react';
+import { useReducer } from 'react';
 
 import { INITIAL_STATE_WDL } from '@/constants/wordle';
 import { wordleReducer } from '@/lib/reducers';
@@ -8,35 +6,40 @@ import { wordleReducer } from '@/lib/reducers';
 export const useWordle = () => {
   const [state, dispatch] = useReducer(wordleReducer, INITIAL_STATE_WDL);
 
-  const onPlay = useCallback(() => {
+  const onPlay = () => {
     dispatch({ type: 'play' });
-  }, []);
+  };
 
-  const onDelete = useCallback(() => {
+  const onDelete = () => {
     dispatch({ type: 'delete' });
-  }, []);
+  };
 
-  const onEnter = useCallback(() => {
+  const onEnter = () => {
     dispatch({ type: 'enter' });
-  }, []);
+  };
 
-  const onKey = useCallback((letter: string) => {
-    dispatch({ type: 'key', letter: letter });
-  }, []);
+  const onKey = (letter: string) => {
+    dispatch({ type: 'key', letter });
+  };
 
-  const onReset = useCallback(() => {
+  const onReset = () => {
     dispatch({ type: 'reset' });
-  }, []);
+  };
 
-  const onResume = useCallback(() => {
+  const onResume = () => {
     dispatch({ type: 'resume' });
-  }, []);
+  };
+
+  const onNetworkError = () => {
+    dispatch({ type: 'network_error' });
+  };
 
   return {
     ...state,
     onDelete,
     onEnter,
     onKey,
+    onNetworkError,
     onPlay,
     onReset,
     onResume,

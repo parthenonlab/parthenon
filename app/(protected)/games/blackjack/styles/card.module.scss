@@ -17,7 +17,6 @@
 .cardBack {
   backface-visibility: hidden;
   grid-area: 1 / 1;
-  transition: transform 0.5s ease;
 }
 
 .cardFront {
@@ -29,7 +28,22 @@
 
 .cardBack {
   align-items: center;
-  background-color: var(--owl-blue);
+  background-color: var(--dark-blue);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 1px,
+      transparent 1px,
+      transparent 8px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.12) 0px,
+      rgba(255, 255, 255, 0.12) 1px,
+      transparent 1px,
+      transparent 8px
+    );
   border: 1.5px solid var(--white);
   border-radius: 7px;
   display: flex;
@@ -39,6 +53,11 @@
 
 .card.active {
   opacity: 1;
+
+  .cardFront,
+  .cardBack {
+    transition: transform 0.5s ease;
+  }
 
   .cardFront {
     transform: rotateY(0deg);
@@ -50,26 +69,26 @@
 }
 
 .animateDown {
-  animation: slideDown 0.5s ease forwards;
+  animation: slideDown 0.75s ease forwards;
 
   .cardFront {
-    animation: flipFront 0.5s ease forwards;
+    animation: flipFront 0.75s ease forwards;
   }
 
   .cardBack {
-    animation: flipBack 0.5s ease forwards;
+    animation: flipBack 0.75s ease forwards;
   }
 }
 
 .animateUp {
-  animation: slideUp 0.5s ease forwards;
+  animation: slideUp 0.75s ease forwards;
 
   .cardFront {
-    animation: flipFront 0.5s ease forwards;
+    animation: flipFront 0.75s ease forwards;
   }
 
   .cardBack {
-    animation: flipBack 0.5s ease forwards;
+    animation: flipBack 0.75s ease forwards;
   }
 }
 
@@ -283,34 +302,40 @@
   color: var(--red-casino);
 }
 
+.order-0,
+.order-0 .cardFront,
+.order-0 .cardBack {
+  animation-delay: 0s;
+}
+
 .order-1,
 .order-1 .cardFront,
 .order-1 .cardBack {
-  animation-delay: 0.5s;
+  animation-delay: 0.75s;
 }
 
 .order-2,
 .order-2 .cardFront,
 .order-2 .cardBack {
-  animation-delay: 1s;
+  animation-delay: 1.5s;
 }
 
 .order-3,
 .order-3 .cardFront,
 .order-3 .cardBack {
-  animation-delay: 1.5s;
+  animation-delay: 2.25s;
 }
 
 .order-4,
 .order-4 .cardFront,
 .order-4 .cardBack {
-  animation-delay: 2s;
+  animation-delay: 3s;
 }
 
 .order-5,
 .order-5 .cardFront,
 .order-5 .cardBack {
-  animation-delay: 2.5s;
+  animation-delay: 3.75s;
 }
 
 @keyframes slideDown {
@@ -318,12 +343,12 @@
     transform: translateY(-100%);
     opacity: 1;
   }
-  50% {
-    transform: translateY(0px);
+  30% {
+    transform: translateY(0);
     opacity: 1;
   }
   100% {
-    transform: translateY(0px);
+    transform: translateY(0);
     opacity: 1;
   }
 }
@@ -333,7 +358,7 @@
     transform: translateY(100%);
     opacity: 1;
   }
-  50% {
+  30% {
     transform: translateY(0);
     opacity: 1;
   }
@@ -347,7 +372,7 @@
   0% {
     transform: rotateY(180deg);
   }
-  50% {
+  30% {
     transform: rotateY(180deg);
   }
   100% {
@@ -359,7 +384,7 @@
   0% {
     transform: rotateY(0deg);
   }
-  50% {
+  30% {
     transform: rotateY(0deg);
   }
   100% {

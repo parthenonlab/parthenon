@@ -150,6 +150,28 @@ describe('DOUBLE', () => {
     expect(result.dealerHand.length).toBeGreaterThan(1);
   });
 
+  it('dealer does not draw when player hits exactly 21 via double', () => {
+    const state = playingState({
+      deck: makeDeck(makeCard('3')),
+      playerHand: [makeCard('A'), makeCard('7')], // 18 → draws 3 → 21
+      dealerHand: [makeCard('6')],                // 6 — would draw if allowed
+      bet: 100,
+    });
+    const result = blackjackReducer(state, { type: 'DOUBLE' });
+    expect(result.dealerHand).toHaveLength(1);
+  });
+
+  it('dealer does not draw when player busts via double', () => {
+    const state = playingState({
+      deck: makeDeck(makeCard('K')),
+      playerHand: [makeCard('9'), makeCard('8')], // 17 → draws K → 27
+      dealerHand: [makeCard('5')],                // 5 — would draw if allowed
+      bet: 100,
+    });
+    const result = blackjackReducer(state, { type: 'DOUBLE' });
+    expect(result.dealerHand).toHaveLength(1);
+  });
+
   it('returns state unchanged when deck is empty', () => {
     const state = playingState({ deck: [], playerHand: [makeCard('8'), makeCard('7')], bet: 100 });
     expect(blackjackReducer(state, { type: 'DOUBLE' })).toEqual(state);

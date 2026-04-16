@@ -12,4 +12,5 @@ export enum WordleStatus {
   Playing,
   InvalidGuess,
   InvalidWord,
+  NetworkError,
 }

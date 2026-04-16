@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import Invite from './invite';
+import { Invite } from './invite';
 
 export const metadata: Metadata = {
   title: 'Parthenon | Invite',
