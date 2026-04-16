@@ -8,12 +8,23 @@ import { Stats as StatsData, WordleStats } from '@parthenonlab/types';
 import { API_URLS } from '@/constants/api';
 import { INITIAL_WORDLE } from '@/constants/stats';
 import { MAX_ATTEMPTS, WORD_LENGTH, WORD_LIST } from '@/constants/wordle';
-import { GameCode, GamePage, WordleKeyStatus, WordleStatus } from '@/enums/games';
+
+import {
+  GameCode,
+  GamePage,
+  WordleKeyStatus,
+  WordleStatus,
+} from '@/enums/games';
 
 import { useFetch, useModal, useParthenon, useWordle } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
-import { ActiveGameRequest, ActiveGameResult, WordleGuess } from '@/interfaces/games';
 import { encrypt } from '@/lib/utils';
+
+import {
+  ActiveGameRequest,
+  ActiveGameResult,
+  WordleGuess,
+} from '@/interfaces/games';
 
 import { Loading, Modal } from '@/components';
 import { AnswerGrid, Keyboard, Notice, Rules, Stats } from './components';
@@ -57,7 +68,9 @@ export const Wordle = () => {
   const fetchStats = useCallback(async () => {
     if (!user?.discord_id) return;
 
-    const data = await fetchGet<StatsData>(`${API_URLS.STATS}/${user.discord_id}`);
+    const data = await fetchGet<StatsData>(
+      `${API_URLS.STATS}/${user.discord_id}`,
+    );
     setStats(data?.[GameCode.Wordle] ?? INITIAL_WORDLE);
     setIsStatsFetched(true);
   }, [fetchGet, user]);
@@ -68,15 +81,15 @@ export const Wordle = () => {
   }, [fetchStats, isStatsFetched, isUserFetched]);
 
   const getGame = useCallback(async (): Promise<boolean> => {
-    const game = await fetchPost<ActiveGameResult<WordleStats>, ActiveGameRequest>(
-      API_URLS.GAMES,
-      {
-        code: GameCode.Wordle,
-        data: {
-          sessionKey: encrypt(answerRef.current),
-        },
+    const game = await fetchPost<
+      ActiveGameResult<WordleStats>,
+      ActiveGameRequest
+    >(API_URLS.GAMES, {
+      code: GameCode.Wordle,
+      data: {
+        sessionKey: encrypt(answerRef.current),
       },
-    );
+    });
 
     if (game) {
       gameKeyRef.current = game.key;
@@ -91,16 +104,16 @@ export const Wordle = () => {
     async (guess: string): Promise<ActiveGameResult<WordleStats> | null> => {
       if (!gameKeyRef.current) return null;
 
-      const result = await fetchPatch<ActiveGameResult<WordleStats>, ActiveGameRequest>(
-        API_URLS.GAMES,
-        {
-          key: gameKeyRef.current,
-          code: GameCode.Wordle,
-          data: {
-            sessionCode: encrypt(guess),
-          },
+      const result = await fetchPatch<
+        ActiveGameResult<WordleStats>,
+        ActiveGameRequest
+      >(API_URLS.GAMES, {
+        key: gameKeyRef.current,
+        code: GameCode.Wordle,
+        data: {
+          sessionCode: encrypt(guess),
         },
-      );
+      });
 
       if (result) gameKeyRef.current = result.key;
       return result;
@@ -130,7 +143,8 @@ export const Wordle = () => {
       return;
     }
     if (result.stats) setStats(result.stats);
-    if (result.cashDelta && user) setStateUser({ ...user, cash: user.cash + result.cashDelta });
+    if (result.cashDelta && user)
+      setStateUser({ ...user, cash: user.cash + result.cashDelta });
   }, [onEnter, onNetworkError, onPlay, setStateUser, updateGame, user]);
 
   const handleKeyPress = useCallback(

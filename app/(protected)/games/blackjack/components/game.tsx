@@ -94,9 +94,17 @@ export const GameTable = ({
       playerHand.length > 0 &&
       !double;
 
-    const lastNewDealerOrder = Math.max(dealerHand.length - dealerDealStart - 1, 0);
-    const lastNewPlayerRawOrder = Math.max(playerHand.length - playerDealStart - 1, 0);
-    const lastNewPlayerOrder = initialDeal ? lastNewPlayerRawOrder + 1 : lastNewPlayerRawOrder;
+    const lastNewDealerOrder = Math.max(
+      dealerHand.length - dealerDealStart - 1,
+      0,
+    );
+    const lastNewPlayerRawOrder = Math.max(
+      playerHand.length - playerDealStart - 1,
+      0,
+    );
+    const lastNewPlayerOrder = initialDeal
+      ? lastNewPlayerRawOrder + 1
+      : lastNewPlayerRawOrder;
     const lastNewOrder = Math.max(lastNewDealerOrder, lastNewPlayerOrder);
     const animDelay = lastNewOrder * CARD_STAGGER + CARD_DURATION + 100;
 
@@ -142,7 +150,8 @@ export const GameTable = ({
               else if (dealerHand.length === 6) size = CardSize.Small;
               else if (dealerHand.length > 6) size = CardSize.XSmall;
 
-              const order = i >= dealerDealStart ? i - dealerDealStart : undefined;
+              const order =
+                i >= dealerDealStart ? i - dealerDealStart : undefined;
 
               return (
                 <CardBox
@@ -158,15 +167,17 @@ export const GameTable = ({
           </div>
         </div>
         <div className={isGameOver ? styles.result : styles.actions}>
-          {!isGameOver && !isAnimating && status !== BlackjackStatus.WinPending && (
-            <>
-              <button disabled={!bet || bet > cash} onClick={onDouble}>
-                DOUBLE
-              </button>
-              <button onClick={onHit}>HIT</button>
-              <button onClick={handleStand}>STAND</button>
-            </>
-          )}
+          {!isGameOver &&
+            !isAnimating &&
+            status !== BlackjackStatus.WinPending && (
+              <>
+                <button disabled={!bet || bet > cash} onClick={onDouble}>
+                  DOUBLE
+                </button>
+                <button onClick={onHit}>HIT</button>
+                <button onClick={handleStand}>STAND</button>
+              </>
+            )}
           {isGameOver && !isAnimating && (
             <div>
               <p className={styles.resultLabel}>{status}</p>
@@ -191,8 +202,10 @@ export const GameTable = ({
               else if (playerHand.length === 6) size = CardSize.Small;
               else if (playerHand.length > 6) size = CardSize.XSmall;
 
-              const rawOrder = i >= playerDealStart ? i - playerDealStart : undefined;
-              const order = rawOrder !== undefined && initialDeal ? rawOrder + 1 : rawOrder;
+              const rawOrder =
+                i >= playerDealStart ? i - playerDealStart : undefined;
+              const order =
+                rawOrder !== undefined && initialDeal ? rawOrder + 1 : rawOrder;
 
               return (
                 <CardBox

@@ -15,7 +15,9 @@ const makeDeck = (...cards: PlayCard[]): PlayCard[] => [
   ...Array(52 - cards.length).fill(makeCard('2', 'spades')),
 ];
 
-const playingState = (overrides: Partial<BlackjackState> = {}): BlackjackState => ({
+const playingState = (
+  overrides: Partial<BlackjackState> = {},
+): BlackjackState => ({
   ...INITIAL_STATE_BLK,
   status: BlackjackStatus.Playing,
   bet: 100,
@@ -24,12 +26,18 @@ const playingState = (overrides: Partial<BlackjackState> = {}): BlackjackState =
 
 describe('BET_UPDATE', () => {
   it('updates the bet', () => {
-    const state = blackjackReducer(INITIAL_STATE_BLK, { type: 'BET_UPDATE', payload: 250 });
+    const state = blackjackReducer(INITIAL_STATE_BLK, {
+      type: 'BET_UPDATE',
+      payload: 250,
+    });
     expect(state.bet).toBe(250);
   });
 
   it('accepts null to clear the bet', () => {
-    const state = blackjackReducer(INITIAL_STATE_BLK, { type: 'BET_UPDATE', payload: null });
+    const state = blackjackReducer(INITIAL_STATE_BLK, {
+      type: 'BET_UPDATE',
+      payload: null,
+    });
     expect(state.bet).toBeNull();
   });
 });
@@ -88,7 +96,10 @@ describe('HIT', () => {
   });
 
   it('returns state unchanged when deck is empty', () => {
-    const state = playingState({ deck: [], playerHand: [makeCard('5'), makeCard('6')] });
+    const state = playingState({
+      deck: [],
+      playerHand: [makeCard('5'), makeCard('6')],
+    });
     const result = blackjackReducer(state, { type: 'HIT' });
     expect(result).toEqual(state);
   });
@@ -154,7 +165,7 @@ describe('DOUBLE', () => {
     const state = playingState({
       deck: makeDeck(makeCard('3')),
       playerHand: [makeCard('A'), makeCard('7')], // 18 → draws 3 → 21
-      dealerHand: [makeCard('6')],                // 6 — would draw if allowed
+      dealerHand: [makeCard('6')], // 6 — would draw if allowed
       bet: 100,
     });
     const result = blackjackReducer(state, { type: 'DOUBLE' });
@@ -165,7 +176,7 @@ describe('DOUBLE', () => {
     const state = playingState({
       deck: makeDeck(makeCard('K')),
       playerHand: [makeCard('9'), makeCard('8')], // 17 → draws K → 27
-      dealerHand: [makeCard('5')],                // 5 — would draw if allowed
+      dealerHand: [makeCard('5')], // 5 — would draw if allowed
       bet: 100,
     });
     const result = blackjackReducer(state, { type: 'DOUBLE' });
@@ -173,7 +184,11 @@ describe('DOUBLE', () => {
   });
 
   it('returns state unchanged when deck is empty', () => {
-    const state = playingState({ deck: [], playerHand: [makeCard('8'), makeCard('7')], bet: 100 });
+    const state = playingState({
+      deck: [],
+      playerHand: [makeCard('8'), makeCard('7')],
+      bet: 100,
+    });
     expect(blackjackReducer(state, { type: 'DOUBLE' })).toEqual(state);
   });
 
@@ -210,7 +225,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('A'), makeCard('K')],
       dealerHand: [makeCard('5')],
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Blackjack);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Blackjack,
+    );
   });
 
   it('returns Push when both player and dealer have blackjack', () => {
@@ -218,7 +235,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('A'), makeCard('K')],
       dealerHand: [makeCard('A'), makeCard('Q')],
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Push);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Push,
+    );
   });
 
   it('returns Bust when player exceeds 21', () => {
@@ -226,7 +245,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('K'), makeCard('Q'), makeCard('5')],
       dealerHand: [makeCard('7')],
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Bust);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Bust,
+    );
   });
 
   it('returns Lose when dealer has blackjack and player does not', () => {
@@ -234,7 +255,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('9'), makeCard('8')],
       dealerHand: [makeCard('A'), makeCard('K')],
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Lose);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Lose,
+    );
   });
 
   it('returns Win when dealer >= 17 and player has higher total', () => {
@@ -242,7 +265,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('K'), makeCard('9')], // 19
       dealerHand: [makeCard('K'), makeCard('8')], // 18
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Win);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Win,
+    );
   });
 
   it('returns Lose when dealer >= 17 and dealer has higher total', () => {
@@ -250,7 +275,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('K'), makeCard('8')], // 18
       dealerHand: [makeCard('K'), makeCard('9')], // 19
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Lose);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Lose,
+    );
   });
 
   it('returns Push when dealer >= 17 and totals are equal', () => {
@@ -258,7 +285,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('K'), makeCard('8')], // 18
       dealerHand: [makeCard('K'), makeCard('8')], // 18
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Push);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Push,
+    );
   });
 
   it('returns DealerBust when dealer exceeds 21', () => {
@@ -266,7 +295,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('K'), makeCard('8')], // 18
       dealerHand: [makeCard('K'), makeCard('Q'), makeCard('5')], // 25
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.DealerBust);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.DealerBust,
+    );
   });
 
   it('returns WinPending when player hits 21 with 3+ cards and game is still active', () => {
@@ -274,7 +305,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('7'), makeCard('7'), makeCard('7')], // 21
       dealerHand: [makeCard('5')],
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.WinPending);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.WinPending,
+    );
   });
 
   it('resolves WinPending to a final status after dealer plays', () => {
@@ -283,7 +316,9 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('7'), makeCard('7'), makeCard('7')], // 21
       dealerHand: [makeCard('K'), makeCard('8')], // 18 — player wins
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Win);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Win,
+    );
   });
 
   it('returns Playing when dealer is below 17 and no terminal condition is met', () => {
@@ -291,6 +326,8 @@ describe('SET_STATUS', () => {
       playerHand: [makeCard('K'), makeCard('8')], // 18
       dealerHand: [makeCard('6')], // 6 — still drawing
     });
-    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(BlackjackStatus.Playing);
+    expect(blackjackReducer(state, { type: 'SET_STATUS' }).status).toBe(
+      BlackjackStatus.Playing,
+    );
   });
 });

@@ -18,7 +18,10 @@ jest.mock('@/constants/wordle', () => ({
   WORDLE_REWARDS: [10000, 1000, 500, 250, 100, 50],
 }));
 
-const playingState = (answer: string, overrides: Partial<WordleState> = {}): WordleState => ({
+const playingState = (
+  answer: string,
+  overrides: Partial<WordleState> = {},
+): WordleState => ({
   answer,
   currentGuess: '',
   guesses: [],
@@ -30,7 +33,10 @@ const playingState = (answer: string, overrides: Partial<WordleState> = {}): Wor
 
 describe('key', () => {
   it('appends a letter to the current guess', () => {
-    const state = wordleReducer(playingState('crane'), { type: 'key', letter: 'c' });
+    const state = wordleReducer(playingState('crane'), {
+      type: 'key',
+      letter: 'c',
+    });
     expect(state.currentGuess).toBe('c');
   });
 
@@ -65,7 +71,10 @@ describe('delete', () => {
   });
 
   it('does nothing when game is over', () => {
-    const state = playingState('crane', { status: WordleStatus.Answered, currentGuess: 'cran' });
+    const state = playingState('crane', {
+      status: WordleStatus.Answered,
+      currentGuess: 'cran',
+    });
     expect(wordleReducer(state, { type: 'delete' }).currentGuess).toBe('cran');
   });
 });
@@ -73,12 +82,16 @@ describe('delete', () => {
 describe('enter', () => {
   it('returns InvalidGuess when current guess is shorter than WORD_LENGTH', () => {
     const state = playingState('crane', { currentGuess: 'cra' });
-    expect(wordleReducer(state, { type: 'enter' }).status).toBe(WordleStatus.InvalidGuess);
+    expect(wordleReducer(state, { type: 'enter' }).status).toBe(
+      WordleStatus.InvalidGuess,
+    );
   });
 
   it('returns InvalidWord when guess is not in the word list', () => {
     const state = playingState('crane', { currentGuess: 'zzzzz' });
-    expect(wordleReducer(state, { type: 'enter' }).status).toBe(WordleStatus.InvalidWord);
+    expect(wordleReducer(state, { type: 'enter' }).status).toBe(
+      WordleStatus.InvalidWord,
+    );
   });
 
   it('returns Answered and assigns reward when guess matches the answer', () => {
@@ -164,16 +177,19 @@ describe('enter — letter results', () => {
     const state = playingState('crane', { currentGuess: 'chair' });
     const result = wordleReducer(state, { type: 'enter' });
     expect(result.guesses[0].result[0]).toBe(WordleKeyStatus.Correct); // c
-    expect(result.guesses[0].result[1]).toBe(WordleKeyStatus.Absent);  // h
+    expect(result.guesses[0].result[1]).toBe(WordleKeyStatus.Absent); // h
     expect(result.guesses[0].result[2]).toBe(WordleKeyStatus.Correct); // a
-    expect(result.guesses[0].result[3]).toBe(WordleKeyStatus.Absent);  // i
+    expect(result.guesses[0].result[3]).toBe(WordleKeyStatus.Absent); // i
     expect(result.guesses[0].result[4]).toBe(WordleKeyStatus.Present); // r
   });
 });
 
 describe('reset', () => {
   it('resets state to initial values', () => {
-    const state = playingState('crane', { currentGuess: 'cra', guesses: [{ word: 'brain', result: [] }] });
+    const state = playingState('crane', {
+      currentGuess: 'cra',
+      guesses: [{ word: 'brain', result: [] }],
+    });
     const result = wordleReducer(state, { type: 'reset' });
     expect(result.currentGuess).toBe('');
     expect(result.guesses).toHaveLength(0);
@@ -185,7 +201,9 @@ describe('reset', () => {
 describe('resume', () => {
   it('sets status to Playing', () => {
     const state = playingState('crane', { status: WordleStatus.InvalidWord });
-    expect(wordleReducer(state, { type: 'resume' }).status).toBe(WordleStatus.Playing);
+    expect(wordleReducer(state, { type: 'resume' }).status).toBe(
+      WordleStatus.Playing,
+    );
   });
 });
 
@@ -218,11 +236,16 @@ describe('play', () => {
 describe('network_error', () => {
   it('sets status to NetworkError', () => {
     const state = playingState('crane');
-    expect(wordleReducer(state, { type: 'network_error' }).status).toBe(WordleStatus.NetworkError);
+    expect(wordleReducer(state, { type: 'network_error' }).status).toBe(
+      WordleStatus.NetworkError,
+    );
   });
 
   it('does not modify other state fields', () => {
-    const state = playingState('crane', { currentGuess: 'br', guesses: [{ word: 'brain', result: [] }] });
+    const state = playingState('crane', {
+      currentGuess: 'br',
+      guesses: [{ word: 'brain', result: [] }],
+    });
     const result = wordleReducer(state, { type: 'network_error' });
     expect(result.currentGuess).toBe('br');
     expect(result.guesses).toHaveLength(1);
