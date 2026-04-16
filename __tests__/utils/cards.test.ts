@@ -1,6 +1,12 @@
 import { CardSize } from '@/enums/games';
 import { PlayCard } from '@/interfaces/games';
-import { createCardDeck, drawCard, getHandValue, shuffleDeck } from '@/lib/utils/cards';
+
+import {
+  createCardDeck,
+  drawCard,
+  getHandValue,
+  shuffleDeck,
+} from '@/lib/utils/cards';
 
 const makeCard = (rank: string, suit = 'hearts'): PlayCard => ({
   rank: rank as PlayCard['rank'],
@@ -16,7 +22,21 @@ describe('createCardDeck', () => {
   it('contains every rank for every suit', () => {
     const deck = createCardDeck();
     const suits = ['hearts', 'diamonds', 'clubs', 'spades'];
-    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    const ranks = [
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K',
+      'A',
+    ];
 
     for (const suit of suits) {
       for (const rank of ranks) {
@@ -63,7 +83,9 @@ describe('getHandValue', () => {
   });
 
   it('adjusts ace from 11 to 1 to avoid a bust', () => {
-    expect(getHandValue([makeCard('A'), makeCard('K'), makeCard('5')])).toBe(16);
+    expect(getHandValue([makeCard('A'), makeCard('K'), makeCard('5')])).toBe(
+      16,
+    );
   });
 
   it('handles two aces correctly', () => {
@@ -80,7 +102,9 @@ describe('getHandValue', () => {
   });
 
   it('correctly calculates a busted hand', () => {
-    expect(getHandValue([makeCard('K'), makeCard('Q'), makeCard('5')])).toBe(25);
+    expect(getHandValue([makeCard('K'), makeCard('Q'), makeCard('5')])).toBe(
+      25,
+    );
   });
 });
 

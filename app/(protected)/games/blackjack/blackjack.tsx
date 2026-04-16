@@ -53,7 +53,9 @@ export const Blackjack = () => {
   const fetchStats = useCallback(async () => {
     if (!user?.discord_id) return;
 
-    const data = await fetchGet<StatsData>(`${API_URLS.STATS}/${user.discord_id}`);
+    const data = await fetchGet<StatsData>(
+      `${API_URLS.STATS}/${user.discord_id}`,
+    );
     setStats(data?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK);
     setIsStatsFetched(true);
   }, [fetchGet, user]);
@@ -65,15 +67,15 @@ export const Blackjack = () => {
 
   const getGame = useCallback(async (): Promise<boolean> => {
     setIsGameReady(false);
-    const game = await fetchPost<ActiveGameResult<BlackjackStats>, ActiveGameRequest>(
-      API_URLS.GAMES,
-      {
-        code: GameCode.Blackjack,
-        data: {
-          sessionKey: encrypt('' + betRef.current),
-        },
+    const game = await fetchPost<
+      ActiveGameResult<BlackjackStats>,
+      ActiveGameRequest
+    >(API_URLS.GAMES, {
+      code: GameCode.Blackjack,
+      data: {
+        sessionKey: encrypt('' + betRef.current),
       },
-    );
+    });
 
     if (game) {
       gameKeyRef.current = game.key;
@@ -84,25 +86,26 @@ export const Blackjack = () => {
     return false;
   }, [fetchPost]);
 
-  const updateGame = useCallback(async (): Promise<ActiveGameResult<BlackjackStats> | null> => {
-    if (!gameKeyRef.current) return null;
+  const updateGame =
+    useCallback(async (): Promise<ActiveGameResult<BlackjackStats> | null> => {
+      if (!gameKeyRef.current) return null;
 
-    const codeString = double ? status + '-double' : status;
+      const codeString = double ? status + '-double' : status;
 
-    const result = await fetchPatch<ActiveGameResult<BlackjackStats>, ActiveGameRequest>(
-      API_URLS.GAMES,
-      {
+      const result = await fetchPatch<
+        ActiveGameResult<BlackjackStats>,
+        ActiveGameRequest
+      >(API_URLS.GAMES, {
         key: gameKeyRef.current,
         code: GameCode.Blackjack,
         data: {
           sessionCode: encrypt(codeString),
         },
-      },
-    );
+      });
 
-    if (result) gameKeyRef.current = result.key;
-    return result ?? null;
-  }, [double, status, fetchPatch]);
+      if (result) gameKeyRef.current = result.key;
+      return result ?? null;
+    }, [double, status, fetchPatch]);
 
   const updateUser = useCallback(
     async (payload: Partial<User>) => {
@@ -127,7 +130,8 @@ export const Blackjack = () => {
         const result = await updateGame();
         if (!result) return;
         if (result.stats) setStats(result.stats);
-        if (result.cashDelta !== undefined) updateUser({ cash: user.cash + result.cashDelta });
+        if (result.cashDelta !== undefined)
+          updateUser({ cash: user.cash + result.cashDelta });
       } catch {
         // game result failed to save — outcome is not persisted
       }
@@ -257,4 +261,3 @@ export const Blackjack = () => {
     </div>
   );
 };
-

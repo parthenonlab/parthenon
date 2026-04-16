@@ -26,8 +26,8 @@ export const Keyboard = ({
     const styleClass = isBackspace
       ? `${styles.backspace} ${styles[keyResult]}`
       : isEnter
-      ? `${styles.enter} ${styles[keyResult]}`
-      : styles[keyResult];
+        ? `${styles.enter} ${styles[keyResult]}`
+        : styles[keyResult];
 
     const handleKeyClick = () => {
       if (isBackspace) onDelete();
