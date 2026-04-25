@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { useCallback, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 
-import { Header } from '@/components';
+import { Header, Loading } from '@/components';
 import { useFetch, useParthenon } from '@/hooks';
 import { getLinkedUser } from '@/lib/utils';
 
@@ -40,7 +40,8 @@ const ProtectedLayout = ({
     if (!user) fetchUser();
   }, [fetchUser, isSignedIn, isUserFetched, user]);
 
-  if (isLoaded && !isSignedIn) return redirect('/');
+  if (!isLoaded) return <Loading />;
+  if (!isSignedIn) return redirect('/');
 
   return (
     <>
