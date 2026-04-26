@@ -69,26 +69,26 @@
 }
 
 .animateDown {
-  animation: slideDown 0.75s ease forwards;
+  animation: slideDown 0.65s ease forwards;
 
   .cardFront {
-    animation: flipFront 0.75s ease forwards;
+    animation: flipFront 0.65s ease forwards;
   }
 
   .cardBack {
-    animation: flipBack 0.75s ease forwards;
+    animation: flipBack 0.65s ease forwards;
   }
 }
 
 .animateUp {
-  animation: slideUp 0.75s ease forwards;
+  animation: slideUp 0.65s ease forwards;
 
   .cardFront {
-    animation: flipFront 0.75s ease forwards;
+    animation: flipFront 0.65s ease forwards;
   }
 
   .cardBack {
-    animation: flipBack 0.75s ease forwards;
+    animation: flipBack 0.65s ease forwards;
   }
 }
 
@@ -311,31 +311,31 @@
 .order-1,
 .order-1 .cardFront,
 .order-1 .cardBack {
-  animation-delay: 0.75s;
+  animation-delay: 0.65s;
 }
 
 .order-2,
 .order-2 .cardFront,
 .order-2 .cardBack {
-  animation-delay: 1.5s;
+  animation-delay: 1.3s;
 }
 
 .order-3,
 .order-3 .cardFront,
 .order-3 .cardBack {
-  animation-delay: 2.25s;
+  animation-delay: 1.95s;
 }
 
 .order-4,
 .order-4 .cardFront,
 .order-4 .cardBack {
-  animation-delay: 3s;
+  animation-delay: 2.6s;
 }
 
 .order-5,
 .order-5 .cardFront,
 .order-5 .cardBack {
-  animation-delay: 3.75s;
+  animation-delay: 3.25s;
 }
 
 @keyframes slideDown {

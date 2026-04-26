@@ -12,8 +12,8 @@ import { CardBox } from './card';
 
 import styles from '../styles/game.module.scss';
 
-const CARD_DURATION = 750;
-const CARD_STAGGER = 750;
+const CARD_DURATION = 650;
+const CARD_STAGGER = 650;
 
 const getCardSize = (handLength: number, baseSize: CardSize): CardSize => {
   if (handLength === 5) return CardSize.Medium;
