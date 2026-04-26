@@ -4,3 +4,4 @@ export * from './formatDate';
 export * from './formatNumberToString';
 export * from './formatPokemonName';
 export * from './getLinkedUser';
+export * from './notifyDiscord';

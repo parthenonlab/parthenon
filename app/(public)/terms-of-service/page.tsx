@@ -12,7 +12,7 @@ const Terms = () => {
     <div className={styles.terms}>
       <div className={styles.headline}>
         <h1>TERMS OF SERVICE</h1>
-        <p>Effective Date: August 1, 2025</p>
+        <p>Effective Date: April 27, 2026</p>
       </div>
       <ul className={styles.sections}>
         <li>
@@ -46,6 +46,16 @@ const Terms = () => {
           </p>
         </li>
 
+        <li>
+          <h2>ACCOUNT LINKING</h2>
+          <p>
+            You may connect both a Discord and Twitch account to the Site. If
+            both accounts exist separately in our system, linking them will
+            combine their virtual currency balances into a single account and
+            permanently delete the Twitch-only account. This action is
+            irreversible.
+          </p>
+        </li>
         <li>
           <h2>VIRTUAL CURRENCY</h2>
           <p>
@@ -92,7 +102,8 @@ const Terms = () => {
             We reserve the right to terminate or suspend your access to the Site
             and Bot at our sole discretion, without notice, for conduct that we
             believe violates these Terms or is harmful to other users of the
-            Site and Bot.
+            Site and Bot. Any virtual currency accumulated under a terminated or
+            suspended account will be forfeited and is not recoverable.
           </p>
         </li>
         <li>

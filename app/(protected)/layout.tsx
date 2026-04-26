@@ -5,6 +5,7 @@ import { useCallback, useEffect } from 'react';
 import { useUser } from '@clerk/nextjs';
 
 import { Header, Loading } from '@/components';
+import { API_URLS } from '@/constants/api';
 import { useFetch, useParthenon } from '@/hooks';
 import { getLinkedUser } from '@/lib/utils';
 
@@ -16,8 +17,8 @@ const ProtectedLayout = ({
   children: React.ReactNode;
 }>) => {
   const { isLoaded, isSignedIn, user: userClerk } = useUser();
-  const { fetchGet, fetchPost } = useFetch();
 
+  const { fetchGet, fetchPost } = useFetch();
   const { isUserFetched, setStateUser, user } = useParthenon();
 
   const fetchUser = useCallback(async () => {
@@ -30,6 +31,12 @@ const ProtectedLayout = ({
         fetchPost,
       );
       setStateUser(data);
+
+      if (data && !sessionStorage.getItem('parthenon_login_notified')) {
+        sessionStorage.setItem('parthenon_login_notified', 'true');
+
+        await fetchPost(API_URLS.NOTIFY_LOGIN, {});
+      }
     } catch {
       setStateUser(null);
     }
