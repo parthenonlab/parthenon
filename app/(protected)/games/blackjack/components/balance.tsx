@@ -1,4 +1,5 @@
 import { SilverIcon } from '@/images/icons';
+import { formatNumberToString } from '@/lib/utils';
 import styles from '../styles/balance.module.scss';
 
 export const Balance = ({
@@ -43,7 +44,7 @@ export const Balance = ({
 
       <div className={balanceClass}>
         <span>CASH BALANCE:</span>
-        <span className={styles.cash}>{cash}</span>
+        <span className={styles.cash}>{formatNumberToString(cash)}</span>
         <SilverIcon />
       </div>
     </div>
