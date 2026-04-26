@@ -65,8 +65,8 @@ export const Blackjack = () => {
     fetchStats();
   }, [fetchStats, isStatsFetched, isUserFetched]);
 
-  const getGame = useCallback(async (): Promise<boolean> => {
-    setIsGameReady(false);
+  const getGame = useCallback(async (skipLoading = false): Promise<boolean> => {
+    if (!skipLoading) setIsGameReady(false);
     const game = await fetchPost<
       ActiveGameResult<BlackjackStats>,
       ActiveGameRequest
