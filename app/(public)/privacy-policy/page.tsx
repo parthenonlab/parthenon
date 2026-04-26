@@ -12,7 +12,7 @@ const Privacy = () => {
     <div className={styles.privacy}>
       <div className={styles.headline}>
         <h1>PRIVACY POLICY</h1>
-        <p>Effective Date: August 1, 2025</p>
+        <p>Effective Date: April 27, 2026</p>
       </div>
       <ul className={styles.sections}>
         <li>
@@ -54,6 +54,21 @@ const Privacy = () => {
           </ul>
         </li>
         <li>
+          <h2>COOKIES &amp; SESSION STORAGE</h2>
+          <p>
+            We use strictly necessary session cookies set by{' '}
+            <a href="https://clerk.com/" target="_blank">
+              Clerk
+            </a>{' '}
+            to manage authentication. These cookies are required for the Site to
+            function and are not used for tracking or advertising. We also use{' '}
+            Session Storage in your browser to avoid duplicate login
+            notifications during a single browsing session. This data is never
+            transmitted to our servers and is cleared when you close your
+            browser tab.
+          </p>
+        </li>
+        <li>
           <h2>HOW WE USE YOUR INFORMATION</h2>
           <p>We use the information we collect to:</p>
           <ul className={styles.list}>
@@ -68,8 +83,9 @@ const Privacy = () => {
             </li>
             <li>
               <p>
-                Communicate with you, including sending updates and security
-                alerts.
+                Log certain user actions (such as logins, account linking, and
+                upgrades) to a private internal Discord channel for
+                administrative monitoring.
               </p>
             </li>
             <li>
@@ -188,10 +204,8 @@ const Privacy = () => {
         <li>
           <h2>RESOURCES</h2>
           <p>
-            We believe in empowering our users with knowledge about their
-            privacy rights and how their personal information is handled. For
-            more information about your rights and our data practices, please
-            visit the following resources:
+            For more information about your privacy rights, please visit the
+            following resources:
           </p>
           <ul className={styles.list}>
             <li>
@@ -207,40 +221,6 @@ const Privacy = () => {
               <p>
                 <a href="https://www.oag.ca.gov/privacy/ccpa" target="_blank">
                   CCPA Guide (California, USA)
-                </a>
-              </p>
-            </li>
-            <li>
-              <p>
-                <a
-                  href="https://www.gov.br/planalto/pt-br/acompanhe-o-planalto/areas-tematicas/politica/lgpd"
-                  target="_blank">
-                  LGPD Guide (Brazil)
-                </a>
-              </p>
-            </li>
-            <li>
-              <p>
-                <a
-                  href="https://www.priv.gc.ca/en/privacy-topics/privacy-laws-in-canada/the-personal-information-protection-and-electronic-documents-act-pipeda"
-                  target="_blank">
-                  PIPEDA Guide (Canada)
-                </a>
-              </p>
-            </li>
-            <li>
-              <p>
-                <a
-                  href="https://www.oaic.gov.au/privacy/australian-privacy-principles"
-                  target="_blank">
-                  Privacy Act (Australia)
-                </a>
-              </p>
-            </li>
-            <li>
-              <p>
-                <a href="https://www.ppc.go.jp/en" target="_blank">
-                  APPI Guide (Japan)
                 </a>
               </p>
             </li>
