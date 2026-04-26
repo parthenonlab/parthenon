@@ -1,5 +1,9 @@
 export const TWITCH_COMMANDS = [
   {
+    name: '!bsky',
+    description: 'Displays the link for AthenaUS Bluesky',
+  },
+  {
     name: '!commands',
     description: 'Displays the link for the list of all commands',
   },
@@ -47,5 +51,9 @@ export const TWITCH_COMMANDS = [
   {
     name: '!twitter',
     description: 'Displays the link for AthenaUS Twitter',
+  },
+  {
+    name: '!web',
+    description: 'Displays the link for Parthenon website',
   },
 ];

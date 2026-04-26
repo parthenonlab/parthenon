@@ -10,6 +10,10 @@ export const DISCORD_COMMANDS = [
     description: 'Flip a coin!',
   },
   {
+    name: '/explore',
+    description: 'Explore the wild and find Pokémon',
+  },
+  {
     name: '/gamble',
     sub: '<value>',
     description: 'Play your points for a chance to double it',
@@ -27,6 +31,10 @@ export const DISCORD_COMMANDS = [
     note: 'Note: Global Command',
   },
   {
+    name: '/inventory',
+    description: 'View your inventory of items',
+  },
+  {
     name: '/leaderboard',
     description: 'Display the top five users with the most coins',
   },
@@ -41,12 +49,16 @@ export const DISCORD_COMMANDS = [
     description: 'View your current balance',
   },
   {
+    name: '/pokedex',
+    description: 'View your collection of Pokémon',
+  },
+  {
+    name: '/shop',
+    description: 'View the shop of items you can buy with your points',
+  },
+  {
     name: '/star',
     sub: '<@member>',
     description: 'Give a star to a user as a form of endorsement',
-  },
-  {
-    name: '/unlink',
-    description: 'Separate your Discord and Twitch accounts',
   },
 ];
