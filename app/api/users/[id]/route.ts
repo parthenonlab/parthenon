@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
+import { unlinkNotification, upgradeNotification } from '@/lib/utils';
 
 import { getUser, unlinkTwitch, upgradeBoxSpace } from '@/services/user';
 
@@ -54,7 +55,7 @@ export const GET = withApiAuth(
 
 /**
  * PATCH /api/users/:id
- * Performs an action on a user. Currently supports: upgrade_box.
+ * Performs an action on a user. Supports: upgrade_box, unlink_twitch.
  *
  * @param request.body.action - The action to perform
  * @param context.params.id - The Discord user ID
@@ -74,9 +75,11 @@ export const PATCH = withApiAuth(
 
     const { action } = await request.json();
 
-    if (action === 'upgrade_box') {
-      try {
-        await connectDatabase();
+    try {
+      await connectDatabase();
+
+      if (action === 'upgrade_box') {
+        const user = await getUser(discordId, 'discord');
         const result = await upgradeBoxSpace(discordId);
 
         if (!result)
@@ -85,34 +88,26 @@ export const PATCH = withApiAuth(
             { status: 400 },
           );
 
+        if (user) await upgradeNotification(user);
         return NextResponse.json(result);
-      } catch (error) {
-        return NextResponse.json(
-          {
-            error:
-              error instanceof Error ? error.message : 'Internal server error',
-          },
-          { status: 500 },
-        );
       }
-    }
 
-    if (action === 'unlink_twitch') {
-      try {
-        await connectDatabase();
+      if (action === 'unlink_twitch') {
+        const user = await getUser(discordId, 'discord');
         await unlinkTwitch(discordId);
+        if (user) await unlinkNotification(user);
         return NextResponse.json({ success: true });
-      } catch (error) {
-        return NextResponse.json(
-          {
-            error:
-              error instanceof Error ? error.message : 'Internal server error',
-          },
-          { status: 500 },
-        );
       }
-    }
 
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error ? error.message : 'Internal server error',
+        },
+        { status: 500 },
+      );
+    }
   },
 );
