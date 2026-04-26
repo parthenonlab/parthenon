@@ -1,30 +1,31 @@
-import { model, models, Schema } from 'mongoose';
+import { HydratedDocument, model, models, Schema } from 'mongoose';
 
-import { GameDocument } from '@/interfaces/games';
+import { ActiveGame } from '@/interfaces/games';
 import { GameCode } from '@/enums/games';
-import { getCollectionENV } from '@/lib/database';
 
-const { MONGODB_COLLECTION_GAMES } = getCollectionENV();
+export type ActiveGameDocument = HydratedDocument<ActiveGame>;
 
-const gameSchema = new Schema<GameDocument>(
+const activeGameSchema = new Schema<ActiveGame>(
   {
     discord_id: { type: String, required: true },
-    key: { type: String },
     code: { type: String, enum: Object.values(GameCode), required: true },
-    data: {
-      type: String,
-      default: () => JSON.stringify({}),
-      set: (val: Record<string, string | string[]>) => JSON.stringify(val),
-      get: (val: string) => {
-        try {
-          return JSON.parse(val);
-        } catch {
-          return {};
-        }
+    key: { type: String, required: true },
+    data: { type: Schema.Types.Mixed, required: true, default: {} },
+  },
+  {
+    collection: 'games',
+    versionKey: false,
+    toObject: {
+      transform: (_doc: unknown, ret: Record<string, unknown>) => {
+        delete ret._id;
+        return ret;
       },
     },
   },
-  { collection: MONGODB_COLLECTION_GAMES, versionKey: false }
 );
 
-export const GameModel = models.Game || model<GameDocument>('Game', gameSchema);
+activeGameSchema.index({ discord_id: 1, code: 1 });
+activeGameSchema.index({ discord_id: 1, key: 1 });
+
+export const ActiveGameModel =
+  models.ActiveGame || model<ActiveGame>('ActiveGame', activeGameSchema);

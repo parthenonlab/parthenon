@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import Wordle from './wordle';
+import { Wordle } from './wordle';
 
 export const metadata: Metadata = {
   title: 'Parthenon | Wordle',

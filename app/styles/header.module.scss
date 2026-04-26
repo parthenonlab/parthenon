@@ -81,8 +81,7 @@
   height: 100%;
   justify-content: center;
   transform: translate(0, -100%);
-  transition-timing-function: ease-in;
-  transition: 0.25s;
+  transition: 0.25s ease-in;
 }
 
 .modalLinks {

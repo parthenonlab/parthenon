@@ -1,127 +1,70 @@
 import { v4 as uuidv4 } from 'uuid';
 
+import { BlackjackStats } from '@parthenonlab/types';
+
 import { INITIAL_BLACKJACK } from '@/constants/stats';
 import { BlackjackStatus, GameCode } from '@/enums/games';
-import { GameObject } from '@/interfaces/games';
+import {
+  ActiveGame,
+  ActiveGameRequest,
+  ActiveGameResult,
+  BlackjackGameData,
+} from '@/interfaces/games';
 import { decrypt } from '@/lib/utils';
 
-import { GameModel } from '@/models/game';
-import { StatModel } from '@/models/stat';
-import { UserModel } from '@/models/user';
+import { UserModel } from '@parthenonlab/models';
+
+import { ActiveGameModel } from '@/models/game';
+import { getStats, updateStats } from '@/services/stats';
 
 export const updateBlackjackGame = async (
-  game: GameObject,
+  game: ActiveGame,
   discordId: string,
-  payload: GameObject
-): Promise<Partial<GameObject> | null> => {
+  payload: ActiveGameRequest,
+): Promise<ActiveGameResult<BlackjackStats>> => {
   const updatedKey = uuidv4();
-  const sessionCode = payload.data!.sessionCode as string;
-
-  const statusString = decrypt(sessionCode);
+  const statusString = decrypt(payload.data.sessionCode!);
   const status = statusString.split('-')[0];
   const isDouble = statusString.split('-')[1] === 'double';
 
-  const gameData =
-    typeof game.data === 'string' ? JSON.parse(game.data) : game.data;
+  const { bet } = game.data as BlackjackGameData;
 
-  const bet = parseInt(gameData.bet as string, 10);
-
-  const userStats = await StatModel.findOne({
-    discord_id: discordId,
-  });
-
+  const userStats = await getStats(discordId);
   const stats = userStats?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK;
 
+  let cashDelta = 0;
+
+  const updatedStats = { ...stats, totalPlays: stats.totalPlays + 1 };
+
   if (status === BlackjackStatus.Blackjack) {
-    const reward = isDouble ? bet + bet * 2 : bet + Math.round(bet * 1.5);
-
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: reward } }
-    );
-
-    await StatModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalBlackjack: stats.totalBlackjack + 1,
-            totalPlayed: stats.totalPlayed + 1,
-            totalWon: stats.totalWon + 1,
-          },
-        },
-      },
-      { upsert: true }
-    );
+    cashDelta = isDouble ? bet + bet * 2 : bet + Math.round(bet * 1.5);
+    updatedStats.totalBlackjack = stats.totalBlackjack + 1;
+    updatedStats.totalWon = stats.totalWon + 1;
   } else if (
     status === BlackjackStatus.Win ||
     status === BlackjackStatus.DealerBust
   ) {
-    const reward = isDouble ? bet + bet * 2 : bet * 2;
-
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: reward } }
-    );
-
-    await StatModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalPlayed: stats.totalPlayed + 1,
-            totalWon: stats.totalWon + 1,
-          },
-        },
-      },
-      { upsert: true }
-    );
+    cashDelta = isDouble ? bet + bet * 2 : bet * 2;
+    updatedStats.totalWon = stats.totalWon + 1;
   } else if (status === BlackjackStatus.Push) {
-    await UserModel.findOneAndUpdate(
-      { discord_id: discordId },
-      { $inc: { cash: bet } }
-    );
-
-    await StatModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalPlayed: stats.totalPlayed + 1,
-          },
-        },
-      },
-      { upsert: true }
-    );
+    cashDelta = bet;
   } else {
-    if (isDouble) {
-      await UserModel.findOneAndUpdate(
-        { discord_id: discordId },
-        { $inc: { cash: -bet } }
-      );
-    }
-
-    await StatModel.findOneAndUpdate(
-      { discord_id: discordId },
-      {
-        $set: {
-          [GameCode.Blackjack]: {
-            ...stats,
-            totalPlayed: stats.totalPlayed + 1,
-          },
-        },
-      },
-      { upsert: true }
-    );
+    if (isDouble) cashDelta = -bet;
   }
 
-  await GameModel.findOneAndDelete({
+  await updateStats(GameCode.Blackjack, discordId, updatedStats);
+
+  await ActiveGameModel.findOneAndDelete({
     discord_id: discordId,
     key: game.key,
   });
 
-  return { key: updatedKey };
+  if (cashDelta !== 0) {
+    await UserModel.findOneAndUpdate(
+      { discord_id: discordId },
+      { $inc: { cash: cashDelta } },
+    );
+  }
+
+  return { key: updatedKey, cashDelta, stats: updatedStats };
 };

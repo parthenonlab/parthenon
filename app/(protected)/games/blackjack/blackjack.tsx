@@ -3,36 +3,29 @@
 import { redirect } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { BlackjackStats, Stats as StatsData, User } from '@parthenonlab/types';
+
 import { API_URLS } from '@/constants/api';
 import { GAME_OVER_STATUS_BLK } from '@/constants/cards';
 import { INITIAL_BLACKJACK } from '@/constants/stats';
-import { BlackjackStatus, GameCode, GamePage } from '@/enums/games';
+import { GameCode, GamePage } from '@/enums/games';
 
-import { useBlackjack, useFetch, useParthenon } from '@/hooks';
+import { useBlackjack, useFetch, useModal, useParthenon } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
+import { ActiveGameRequest, ActiveGameResult } from '@/interfaces/games';
 import { encrypt } from '@/lib/utils/encryption';
 
-import { BlackjackStats, GameObject } from '@/interfaces/games';
-import { UserObject } from '@/interfaces/user';
-
-import { Loading } from '@/components';
+import { Loading, Modal } from '@/components';
 import { Balance, GameTable, Rules, Stats } from './components';
 import styles from '../shared/styles/page.module.scss';
 
-const Blackjack = () => {
-  const {
-    isActiveGamesFetched,
-    isStatsFetched,
-    isUserFetched,
-    stats,
-    user,
-    setStateActiveGame,
-    setStateModal,
-    setStateStats,
-    setStateUser,
-  } = useParthenon();
+export const Blackjack = () => {
+  const { isUserFetched, user, setStateUser } = useParthenon();
+  const { modalType, openModal, closeModal } = useModal<'rules' | 'stats'>();
+  const { fetchGet, fetchPatch, fetchPost } = useFetch();
 
-  const { fetchPatch, fetchPost } = useFetch();
+  const [stats, setStats] = useState<BlackjackStats>(INITIAL_BLACKJACK);
+  const [isStatsFetched, setIsStatsFetched] = useState(false);
 
   const {
     bet,
@@ -50,62 +43,76 @@ const Blackjack = () => {
     onStand,
   } = useBlackjack();
 
+  const [isGameReady, setIsGameReady] = useState(false);
   const [page, setPage] = useState(GamePage.Overview);
 
-  const [dealerLastHand, setDealerLastHand] = useState([]);
-  const [playerLastHand, setPlayerLastHand] = useState([]);
-
   const betRef = useRef(bet);
-  const gameKeyRef = useRef<string | undefined>(null);
+  const gameKeyRef = useRef<string | null>(null);
   const gameSavedRef = useRef(false);
 
-  const getGame = useCallback(async () => {
-    const game = await fetchPost<GameObject>(API_URLS.GAMES, {
+  const fetchStats = useCallback(async () => {
+    if (!user?.discord_id) return;
+
+    const data = await fetchGet<StatsData>(
+      `${API_URLS.STATS}/${user.discord_id}`,
+    );
+    setStats(data?.[GameCode.Blackjack] ?? INITIAL_BLACKJACK);
+    setIsStatsFetched(true);
+  }, [fetchGet, user]);
+
+  useEffect(() => {
+    if (!isUserFetched || isStatsFetched) return;
+    fetchStats();
+  }, [fetchStats, isStatsFetched, isUserFetched]);
+
+  const getGame = useCallback(async (): Promise<boolean> => {
+    setIsGameReady(false);
+    const game = await fetchPost<
+      ActiveGameResult<BlackjackStats>,
+      ActiveGameRequest
+    >(API_URLS.GAMES, {
       code: GameCode.Blackjack,
       data: {
         sessionKey: encrypt('' + betRef.current),
       },
     });
 
-    if (game) gameKeyRef.current = game.key;
-    setStateActiveGame(GameCode.Blackjack, game);
-  }, [fetchPost, setStateActiveGame]);
+    if (game) {
+      gameKeyRef.current = game.key;
+      setIsGameReady(true);
+      return true;
+    }
 
-  const updateGame = useCallback(async () => {
-    if (!gameKeyRef.current) return;
+    return false;
+  }, [fetchPost]);
 
-    const codeString = double ? status + '-double' : status;
+  const updateGame =
+    useCallback(async (): Promise<ActiveGameResult<BlackjackStats> | null> => {
+      if (!gameKeyRef.current) return null;
 
-    const game = await fetchPatch<GameObject>(API_URLS.GAMES, {
-      key: gameKeyRef.current,
-      code: GameCode.Blackjack,
-      data: {
-        sessionCode: encrypt(codeString),
-      },
-    });
+      const codeString = double ? status + '-double' : status;
 
-    if (game) gameKeyRef.current = game.key;
-    setStateActiveGame(GameCode.Blackjack, game);
-  }, [double, status, fetchPatch, setStateActiveGame]);
-
-  const updateStats = useCallback(
-    async (payload: BlackjackStats) => {
-      if (!stats) return;
-
-      setStateStats({
-        ...stats,
-        [GameCode.Blackjack]: { ...payload },
+      const result = await fetchPatch<
+        ActiveGameResult<BlackjackStats>,
+        ActiveGameRequest
+      >(API_URLS.GAMES, {
+        key: gameKeyRef.current,
+        code: GameCode.Blackjack,
+        data: {
+          sessionCode: encrypt(codeString),
+        },
       });
-    },
-    [stats, setStateStats]
-  );
+
+      if (result) gameKeyRef.current = result.key;
+      return result ?? null;
+    }, [double, status, fetchPatch]);
 
   const updateUser = useCallback(
-    async (payload: Partial<UserObject>) => {
+    async (payload: Partial<User>) => {
       if (!user) return;
       setStateUser({ ...user, ...payload });
     },
-    [user, setStateUser]
+    [user, setStateUser],
   );
 
   useEffect(() => {
@@ -117,57 +124,19 @@ const Blackjack = () => {
     if (!GAME_OVER_STATUS_BLK.includes(status) || gameSavedRef.current) return;
 
     gameSavedRef.current = true;
-    updateGame();
 
-    const newStats =
-      stats && stats[GameCode.Blackjack]
-        ? stats[GameCode.Blackjack]
-        : INITIAL_BLACKJACK;
-
-    newStats.totalPlayed += 1;
-
-    if (status === BlackjackStatus.Blackjack) {
-      updateStats({
-        ...newStats,
-        totalBlackjack: newStats.totalBlackjack + 1,
-        totalWon: newStats.totalWon + 1,
-      });
-
-      const reward = double ? bet + bet * 2 : bet + Math.round(bet * 1.5);
-
-      updateUser({
-        ...user,
-        cash: user.cash + reward,
-      });
-    } else if (
-      status === BlackjackStatus.Win ||
-      status === BlackjackStatus.DealerBust
-    ) {
-      updateStats({
-        ...newStats,
-        totalWon: newStats.totalWon + 1,
-      });
-
-      const reward = double ? bet + bet * 2 : bet * 2;
-
-      updateUser({
-        ...user,
-        cash: user.cash + reward,
-      });
-    } else if (status === BlackjackStatus.Push) {
-      updateUser({
-        ...user,
-        cash: user.cash + bet,
-      });
-    } else {
-      if (double) {
-        updateUser({
-          ...user,
-          cash: user.cash - bet,
-        });
+    (async () => {
+      try {
+        const result = await updateGame();
+        if (!result) return;
+        if (result.stats) setStats(result.stats);
+        if (result.cashDelta !== undefined)
+          updateUser({ cash: user.cash + result.cashDelta });
+      } catch {
+        // game result failed to save — outcome is not persisted
       }
-    }
-  }, [bet, double, stats, status, updateGame, updateStats, updateUser, user]);
+    })();
+  }, [bet, status, updateGame, updateUser, user]);
 
   useEffect(() => {
     if (!playerHand.length || !dealerHand.length) return;
@@ -175,8 +144,13 @@ const Blackjack = () => {
     onSetStatus();
   }, [dealerHand, playerHand, onSetStatus]);
 
-  if (isUserFetched && (!user || !user?.discord_username))
+  if (isUserFetched && (!user || !user.discord_username))
     redirect('/dashboard');
+
+  const handleBack = () => {
+    onReset();
+    setPage(GamePage.Overview);
+  };
 
   return (
     <div className={styles.blackjack}>
@@ -184,24 +158,10 @@ const Blackjack = () => {
         <div className={styles.leftButtons}>
           {page !== GamePage.Overview && (
             <>
-              <button
-                className={styles.back}
-                onClick={() => {
-                  onReset();
-                  setDealerLastHand([]);
-                  setPlayerLastHand([]);
-                  setPage(GamePage.Overview);
-                }}>
+              <button className={styles.back} onClick={handleBack}>
                 <BackIcon />
               </button>
-              <button
-                className={styles.backDesktop}
-                onClick={() => {
-                  onReset();
-                  setDealerLastHand([]);
-                  setPlayerLastHand([]);
-                  setPage(GamePage.Overview);
-                }}>
+              <button className={styles.backDesktop} onClick={handleBack}>
                 <BackIcon />
                 <span>QUIT</span>
               </button>
@@ -214,22 +174,12 @@ const Blackjack = () => {
             <>
               <button
                 className={styles.rulesOverview}
-                onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Rules />,
-                  })
-                }>
+                onClick={() => openModal('rules')}>
                 <RulesIcon />
               </button>
               <button
                 className={styles.rulesDesktop}
-                onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Rules />,
-                  })
-                }>
+                onClick={() => openModal('rules')}>
                 RULES
               </button>
             </>
@@ -238,24 +188,12 @@ const Blackjack = () => {
             <>
               <button
                 className={styles.rules}
-                onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: <Rules />,
-                  })
-                }>
+                onClick={() => openModal('rules')}>
                 <RulesIcon />
               </button>
               <button
                 className={styles.stats}
-                onClick={() =>
-                  setStateModal({
-                    isOpen: true,
-                    content: stats && (
-                      <Stats data={stats[GameCode.Blackjack]} />
-                    ),
-                  })
-                }>
+                onClick={() => openModal('stats')}>
                 <StatsIcon />
               </button>
             </>
@@ -273,16 +211,15 @@ const Blackjack = () => {
               <button
                 className={`${styles.play} ${styles.casino}`}
                 disabled={!bet || bet > user.cash || user.cash === 0}
-                onClick={() => {
-                  if (bet) {
-                    setPage(GamePage.Playing);
-                    getGame();
-                    onPlay(bet);
-                    updateUser({
-                      ...user,
-                      cash: user.cash - bet,
-                    });
+                onClick={async () => {
+                  setPage(GamePage.Playing);
+                  const success = await getGame();
+                  if (!success) {
+                    setPage(GamePage.Overview);
+                    return;
                   }
+                  onPlay(bet!);
+                  updateUser({ cash: user.cash - bet! });
                 }}>
                 PLAY
               </button>
@@ -290,29 +227,23 @@ const Blackjack = () => {
           )}
           <div className={styles.statsContainer}>
             {(!isUserFetched || !isStatsFetched) && <Loading />}
-            {isStatsFetched && stats && (
-              <Stats data={stats[GameCode.Blackjack]} />
-            )}
+            {isStatsFetched && <Stats data={stats} />}
           </div>
         </div>
       )}
       {page === GamePage.Playing && (
         <div className={styles.playing}>
-          {(!isUserFetched || !isActiveGamesFetched) && <Loading />}
-          {isUserFetched && user && isActiveGamesFetched && (
+          {(!isUserFetched || !isGameReady) && <Loading />}
+          {isUserFetched && user && isGameReady && (
             <GameTable
               bet={bet}
               cash={user.cash}
               deckSize={deck.length}
-              dealerLastHand={dealerLastHand}
               dealerHand={dealerHand}
               double={double}
               getGame={getGame}
-              playerLastHand={playerLastHand}
               playerHand={playerHand}
               status={status}
-              setDealerLastHand={setDealerLastHand}
-              setPlayerLastHand={setPlayerLastHand}
               onBetChange={onBetChange}
               onDouble={onDouble}
               onHit={onHit}
@@ -322,8 +253,11 @@ const Blackjack = () => {
           )}
         </div>
       )}
+      {modalType && (
+        <Modal onClose={closeModal}>
+          {modalType === 'rules' ? <Rules /> : <Stats data={stats} />}
+        </Modal>
+      )}
     </div>
   );
 };
-
-export default Blackjack;

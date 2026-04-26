@@ -6,11 +6,12 @@ import Image from 'next/image';
 import { Loading } from '@/components';
 import { useParthenon } from '@/hooks';
 import { SilverIcon, StarIcon } from '@/images/icons';
+import { formatNumberToString } from '@/lib/utils';
 
 import { AccountLinked, Instructions, Register } from './components';
 import styles from './page.module.scss';
 
-const Dashboard = () => {
+export const Dashboard = () => {
   const { user: userClerk } = useUser();
   const { isUserFetched, user } = useParthenon();
 
@@ -63,14 +64,14 @@ const Dashboard = () => {
             <div className={styles.item}>
               <p className={styles.label}>
                 <span>POINTS</span>
-                <span>{user ? user.cash : 0}</span>
+                <span>{user ? formatNumberToString(user.cash) : 0}</span>
               </p>
               <SilverIcon />
             </div>
             <div className={styles.item}>
               <p className={styles.label}>
                 <span>STARS</span>
-                <span>{user ? user.stars ?? 0 : 0}</span>
+                <span>{user ? formatNumberToString(user.stars) : 0}</span>
               </p>
               <StarIcon />
             </div>
@@ -81,5 +82,3 @@ const Dashboard = () => {
     </div>
   );
 };
-
-export default Dashboard;

@@ -1,0 +1,130 @@
+'use client';
+
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+import { Catch } from '@parthenonlab/types';
+
+import {
+  POKEBALL_IMAGE_MAP,
+  POKEMON_TYPE_IMAGE_MAP,
+  POKEMON_TYPE_MAP,
+  POKEMON_URLS,
+} from '@/constants/pokemon';
+
+import { Loading } from '@/components';
+import { useFetch } from '@/hooks';
+import { Pokemon } from '@/interfaces/games';
+import { formatPokemonName } from '@/lib/utils';
+
+import styles from './page.module.scss';
+
+interface CaughtEntry {
+  caughtAt: Date;
+  count: number;
+}
+
+const fetchAllPokemon = async (): Promise<Pokemon[]> => {
+  const listRes = await fetch(`${POKEMON_URLS.POKEAPI}?limit=151`);
+  const list = await listRes.json();
+
+  return list.results.map(
+    (entry: { name: string; url: string }, i: number) => ({
+      id: i + 1,
+      name: entry.name,
+      sprite: `${POKEMON_URLS.POKEMONDB}/${entry.name}.png`,
+      types: POKEMON_TYPE_MAP[entry.name] ?? [],
+    }),
+  );
+};
+
+export const Pokedex = () => {
+  const { fetchGetArray } = useFetch();
+  const [pokemon, setPokemon] = useState<Pokemon[]>([]);
+  const [caughtMap, setCaughtMap] = useState<Map<number, CaughtEntry>>(
+    new Map(),
+  );
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    Promise.all([fetchAllPokemon(), fetchGetArray<Catch>('/api/catches')]).then(
+      ([allPokemon, catches]) => {
+        setPokemon(allPokemon);
+        const map = new Map<number, CaughtEntry>();
+        for (const c of catches) {
+          const existing = map.get(c.pokemon_id);
+          if (existing) {
+            existing.count += 1;
+            const date = new Date(c.caught_at);
+            if (date > existing.caughtAt) existing.caughtAt = date;
+          } else {
+            map.set(c.pokemon_id, {
+              caughtAt: new Date(c.caught_at),
+              count: 1,
+            });
+          }
+        }
+        setCaughtMap(map);
+        setLoading(false);
+      },
+    );
+  }, [fetchGetArray]);
+
+  if (loading) return <Loading />;
+
+  return (
+    <div className={styles.pokedex}>
+      <div className={styles.headline}>
+        <h1>POKÉDEX</h1>
+        <Link href="/pc-box" className={styles.pcBoxLink}>
+          Go to PC Box →
+        </Link>
+      </div>
+      <p className={styles.subtitle}>
+        Obtained:{' '}
+        {Array.from(caughtMap.values()).reduce((sum, e) => sum + e.count, 0)} |
+        Unique: {caughtMap.size}
+      </p>
+      <div className={styles.grid}>
+        {pokemon.map(p => {
+          const entry = caughtMap.get(p.id);
+          return (
+            <div
+              key={p.id}
+              className={`${styles.card} ${!entry ? styles.uncaught : ''}`}>
+              <span className={styles.id}>
+                #{String(p.id).padStart(4, '0')}
+              </span>
+              {entry && (
+                <div className={styles.caughtBadge}>
+                  <img
+                    src={POKEBALL_IMAGE_MAP.pokeball}
+                    alt="Pokéball"
+                    className={styles.pokeball}
+                  />
+                  {entry.count > 1 && <span>x{entry.count}</span>}
+                </div>
+              )}
+              <img src={p.sprite} alt={p.name} className={styles.sprite} />
+              {entry && (
+                <span className={styles.name}>{formatPokemonName(p.name)}</span>
+              )}
+              <div className={styles.types}>
+                {p.types.map(type => (
+                  <span key={type} className={`${styles.type} ${styles[type]}`}>
+                    <img
+                      src={POKEMON_TYPE_IMAGE_MAP[type]}
+                      alt={type}
+                      className={styles.typeImage}
+                    />
+                    <span className={styles.typeLabel}>{type}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};

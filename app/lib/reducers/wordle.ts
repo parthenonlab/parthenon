@@ -10,15 +10,30 @@ import {
 import { WordleKeyStatus, WordleStatus } from '@/enums/games';
 import { WordleAction, WordleGuess, WordleState } from '@/interfaces/games';
 
+/**
+ * Picks a random word from the answer list to use as the Wordle answer.
+ *
+ * @returns A randomly selected answer word
+ */
 const generateAnswer = () => {
   const i = Math.floor(Math.random() * ANSWER_LIST.length);
   return ANSWER_LIST[i];
 };
 
+/**
+ * Evaluates a guess against the answer using two-pass Wordle logic.
+ * First pass marks exact matches (Correct), second pass marks letters present
+ * but in the wrong position (Present). Also updates keyboard tile colors.
+ *
+ * @param guess - The guessed word as an array of letters
+ * @param answer - The target answer word
+ * @param keyResults - The current keyboard letter statuses (mutated in place)
+ * @returns An array of WordleKeyStatus values, one per letter in the guess
+ */
 const getLetterResult = (
   guess: string[],
   answer: string,
-  keyResults: { [key: string]: string }
+  keyResults: { [key: string]: WordleKeyStatus }
 ): WordleKeyStatus[] => {
   const result: WordleKeyStatus[] = Array(guess.length).fill(
     WordleKeyStatus.Absent
@@ -38,13 +53,6 @@ const getLetterResult = (
       keyResults[guessArray[i]] = WordleKeyStatus.Correct;
       answerArray[i] = '';
       guessArray[i] = '';
-    } else {
-      if (
-        keyResults[guessArray[i]] !== WordleKeyStatus.Correct &&
-        keyResults[guessArray[i]] !== WordleKeyStatus.Present
-      ) {
-        keyResults[guessArray[i]] = WordleKeyStatus.Absent;
-      }
     }
   }
 
@@ -65,6 +73,14 @@ const getLetterResult = (
   return result;
 };
 
+/**
+ * Reducer for Wordle game state.
+ * Handles starting a game, typing letters, deleting, submitting guesses, and resetting.
+ *
+ * @param state - The current Wordle state
+ * @param action - The dispatched action
+ * @returns The next Wordle state
+ */
 export const wordleReducer = (
   state: WordleState,
   action: WordleAction
@@ -90,68 +106,68 @@ export const wordleReducer = (
           ...state,
           currentGuess: state.currentGuess + action.letter,
         };
-      } else {
-        return state;
       }
+      return state;
     case 'delete':
       if (!isGameOver && state.status !== WordleStatus.Standby) {
         return {
           ...state,
           currentGuess: state.currentGuess.slice(0, -1),
         };
-      } else {
-        return state;
       }
+      return state;
     case 'enter':
-      if (state.currentGuess.length === WORD_LENGTH) {
-        if (!WORD_LIST.includes(state.currentGuess)) {
-          return {
-            ...state,
-            status: WordleStatus.InvalidWord,
-          };
-        }
-
-        const newKeyResults = { ...state.keyResults };
-
-        const result = getLetterResult(
-          state.currentGuess.split(''),
-          state.answer,
-          newKeyResults
-        );
-
-        const newGuess: WordleGuess = { word: state.currentGuess, result };
-        const newGuesses = [...state.guesses, newGuess];
-
-        const newStatus =
-          state.currentGuess === state.answer
-            ? WordleStatus.Answered
-            : newGuesses.length >= MAX_ATTEMPTS
-            ? WordleStatus.Completed
-            : WordleStatus.Playing;
-
-        const newReward =
-          newStatus === WordleStatus.Answered
-            ? WORDLE_REWARDS[newGuesses.length - 1]
-            : null;
-
-        return {
-          ...state,
-          currentGuess: '',
-          guesses: newGuesses,
-          keyResults: newKeyResults,
-          reward: newReward,
-          status: newStatus,
-        };
-      } else {
+      if (state.currentGuess.length !== WORD_LENGTH) {
         return {
           ...state,
           status: WordleStatus.InvalidGuess,
         };
       }
+
+      if (!WORD_LIST.includes(state.currentGuess)) {
+        return {
+          ...state,
+          status: WordleStatus.InvalidWord,
+        };
+      }
+
+      const newKeyResults = { ...state.keyResults };
+
+      const result = getLetterResult(
+        state.currentGuess.split(''),
+        state.answer,
+        newKeyResults
+      );
+
+      const newGuess: WordleGuess = { word: state.currentGuess, result };
+      const newGuesses = [...state.guesses, newGuess];
+
+      const newStatus =
+        state.currentGuess === state.answer
+          ? WordleStatus.Answered
+          : newGuesses.length >= MAX_ATTEMPTS
+          ? WordleStatus.Completed
+          : WordleStatus.Playing;
+
+      const newReward =
+        newStatus === WordleStatus.Answered
+          ? WORDLE_REWARDS[newGuesses.length - 1]
+          : null;
+
+      return {
+        ...state,
+        currentGuess: '',
+        guesses: newGuesses,
+        keyResults: newKeyResults,
+        reward: newReward,
+        status: newStatus,
+      };
     case 'reset':
-      return { ...INITIAL_STATE_WDL };
+      return INITIAL_STATE_WDL;
     case 'resume':
       return { ...state, status: WordleStatus.Playing };
+    case 'network_error':
+      return { ...state, status: WordleStatus.NetworkError };
     default:
       return state;
   }

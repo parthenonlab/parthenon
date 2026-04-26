@@ -1,0 +1,352 @@
+.pcBox {
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+.headline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+
+  h1 {
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.pokedexLink {
+  position: absolute;
+  right: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--accent, #e63946);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    position: static;
+    font-size: 0.75rem;
+  }
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted, #888);
+  margin-bottom: 2rem;
+}
+
+.upgradeSection {
+  position: absolute;
+  left: 0;
+  top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.375rem;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.upgradeInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+  margin: 0;
+}
+
+.upgradeButton {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--text-primary);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.sortButtons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sortButton {
+  padding: 0.375rem 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--text-muted, #888);
+  background: transparent;
+  color: var(--text-muted, #888);
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &.active {
+    border-color: var(--text-primary);
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 0.75rem;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+
+  .releaseButton {
+    visibility: hidden;
+  }
+
+  &:hover .releaseButton {
+    visibility: visible;
+  }
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0.5rem;
+  border-radius: 8px;
+  background: var(--card-bg, #f5f5f5);
+  text-align: center;
+
+  &.shiny {
+    background: linear-gradient(135deg, var(--card-bg, #f5f5f5) 60%, #fff8dc);
+    box-shadow: 0 0 6px 1px rgba(255, 215, 0, 0.4);
+  }
+}
+
+.dexId {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  color: var(--text-muted, #888);
+
+  @media (max-width: 768px) {
+    left: auto;
+    transform: none;
+    right: 0.5rem;
+  }
+}
+
+.favorite {
+  position: absolute;
+  top: -0.5rem;
+  right: 0.5rem;
+  font-size: 2.5rem;
+  color: #ffd700;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.sprite {
+  max-width: 100%;
+}
+
+.name {
+  color: var(--black);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-top: 0.25rem;
+}
+
+.types {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.typeImage {
+  display: none;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+}
+
+.typeLabel {
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+.type {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+  color: #fff;
+  background: #aaa;
+
+  @media (max-width: 768px) {
+    background: transparent;
+    padding: 0;
+  }
+
+  @media (min-width: 769px) {
+    &.normal {
+      background: #a8a878;
+    }
+    &.fire {
+      background: #f08030;
+    }
+    &.water {
+      background: #6890f0;
+    }
+    &.electric {
+      background: #f8d030;
+      color: #333;
+    }
+    &.grass {
+      background: #78c850;
+    }
+    &.ice {
+      background: #98d8d8;
+      color: #333;
+    }
+    &.fighting {
+      background: #c03028;
+    }
+    &.poison {
+      background: #a040a0;
+    }
+    &.ground {
+      background: #e0c068;
+      color: #333;
+    }
+    &.flying {
+      background: #a890f0;
+    }
+    &.psychic {
+      background: #f85888;
+    }
+    &.bug {
+      background: #a8b820;
+    }
+    &.rock {
+      background: #b8a038;
+    }
+    &.ghost {
+      background: #705898;
+    }
+    &.dragon {
+      background: #7038f8;
+    }
+    &.steel {
+      background: #b8b8d0;
+      color: #333;
+    }
+    &.fairy {
+      background: #ee99ac;
+      color: #333;
+    }
+    &.dark {
+      background: #705848;
+    }
+  }
+}
+
+.meta {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.gender {
+  font-size: 0.8rem;
+  color: var(--black);
+}
+
+.shinyBadge {
+  font-size: 1rem;
+  color: #ff1111;
+}
+
+.caught {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+
+  span {
+    font-size: 0.7rem;
+    color: var(--text-muted, #888);
+  }
+}
+
+.releaseButton {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  border-radius: 4px;
+  border: 1px solid #c03028;
+  background: transparent;
+  color: #c03028;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.pokeball {
+  width: 16px;
+  height: 16px;
+}

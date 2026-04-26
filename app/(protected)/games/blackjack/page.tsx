@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 
-import Blackjack from './blackjack';
+import { Blackjack } from './blackjack';
 
 export const metadata: Metadata = {
   title: 'Parthenon | Blackjack',

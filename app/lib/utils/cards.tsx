@@ -1,5 +1,5 @@
 import { CARD_RANKS, CARD_SUITS } from '@/constants/cards';
-import { BlackjackStatus, CardSize } from '@/enums/games';
+import { CardSize } from '@/enums/games';
 import { CardSuit, PlayCard } from '@/interfaces/games';
 
 import {
@@ -9,6 +9,11 @@ import {
   SpadesIcon,
 } from '@/images/icons';
 
+/**
+ * Creates a standard 52-card deck containing all ranks across all suits.
+ *
+ * @returns An ordered array of 52 PlayCard objects
+ */
 export const createCardDeck = (): PlayCard[] => {
   const deck: PlayCard[] = [];
 
@@ -25,6 +30,12 @@ export const createCardDeck = (): PlayCard[] => {
   return deck;
 };
 
+/**
+ * Draws the first card from the deck, removing it in place.
+ *
+ * @param deck - The deck to draw from (mutated in place)
+ * @returns The drawn PlayCard
+ */
 export const drawCard = (deck: PlayCard[]): PlayCard => {
   const card = deck[0];
   deck.splice(0, 1);
@@ -32,6 +43,13 @@ export const drawCard = (deck: PlayCard[]): PlayCard => {
   return card;
 };
 
+/**
+ * Calculates the total value of a Blackjack hand.
+ * Aces start as 11 and are reduced to 1 as needed to avoid busting.
+ *
+ * @param hand - The array of PlayCards to evaluate
+ * @returns The total hand value
+ */
 export const getHandValue = (hand: PlayCard[]) => {
   let total = 0;
   let aces = 0;
@@ -56,6 +74,12 @@ export const getHandValue = (hand: PlayCard[]) => {
   return total;
 };
 
+/**
+ * Returns the SVG icon component for a given card suit.
+ *
+ * @param suit - The card suit ("clubs" | "diamonds" | "hearts" | "spades")
+ * @returns The corresponding suit icon as a React element
+ */
 export const getSuitSVG = (suit: CardSuit) => {
   switch (suit) {
     case 'clubs':
@@ -71,8 +95,13 @@ export const getSuitSVG = (suit: CardSuit) => {
   }
 };
 
+/**
+ * Shuffles a deck in place using the Fisher-Yates algorithm.
+ *
+ * @param deck - The deck to shuffle (mutated in place)
+ * @returns The same deck reference, now shuffled
+ */
 export const shuffleDeck = (deck: PlayCard[]): PlayCard[] => {
-  // Fisher-Yates Shuffle Algorithm
   for (let i = deck.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];

@@ -10,7 +10,7 @@ import styles from './page.module.scss';
 const whitelist = process.env.NEXT_PUBLIC_DISCORD_TEAM?.split(',') ?? [];
 const inviteURL = process.env.NEXT_PUBLIC_DISCORD_INVITE_URL ?? '';
 
-const Invite = () => {
+export const Invite = () => {
   const { isUserFetched, user } = useParthenon();
 
   if (!isUserFetched) return <Loading />;
@@ -51,5 +51,3 @@ const Invite = () => {
     </div>
   );
 };
-
-export default Invite;

@@ -38,5 +38,3 @@ export const connectDatabase = async () => {
 
   return cached.conn;
 };
-
-export * from './env';

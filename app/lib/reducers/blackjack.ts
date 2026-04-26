@@ -3,6 +3,13 @@ import { BlackjackStatus } from '@/enums/games';
 import { PlayCard, BlackjackState, BlackjackAction } from '@/interfaces/games';
 import { drawCard, getHandValue } from '@/lib/utils/cards';
 
+/**
+ * Draws cards for the dealer until the hand value reaches 17 or more.
+ *
+ * @param deck - The current deck (mutated in place)
+ * @param hand - The dealer's current hand
+ * @returns The dealer's final hand
+ */
 const dealerPlay = (deck: PlayCard[], hand: PlayCard[]) => {
   let dealerHand = [...hand];
   let dealerTotal = getHandValue(dealerHand);
@@ -16,43 +23,48 @@ const dealerPlay = (deck: PlayCard[], hand: PlayCard[]) => {
   return dealerHand;
 };
 
+/**
+ * Derives the current game status from the player and dealer hands.
+ *
+ * @param playerHand - The player's current hand
+ * @param dealerHand - The dealer's current hand
+ * @param isWinPending - Whether the game is already in WinPending state (skips re-entering it)
+ * @returns The resolved BlackjackStatus
+ */
 const checkStatus = (
   playerHand: PlayCard[],
   dealerHand: PlayCard[],
   isWinPending?: boolean
 ): BlackjackStatus => {
-  let status = BlackjackStatus.Playing;
-
   const playerHandValue = getHandValue(playerHand);
   const dealerHandValue = getHandValue(dealerHand);
 
   const playerHasBlackjack = playerHandValue === 21 && playerHand.length === 2;
   const dealerHasBlackjack = dealerHandValue === 21 && dealerHand.length === 2;
   const playerHasRegular21 = playerHandValue === 21 && playerHand.length > 2;
+  const dealerDone = dealerHandValue >= 17;
 
-  if (playerHasBlackjack && dealerHasBlackjack) {
-    status = BlackjackStatus.Push;
-  } else if (playerHasBlackjack) {
-    status = BlackjackStatus.Blackjack;
-  } else if (dealerHasBlackjack) {
-    status = BlackjackStatus.Lose;
-  } else if (playerHandValue > 21) {
-    status = BlackjackStatus.Bust;
-  } else if (playerHasRegular21 && !isWinPending) {
-    status = BlackjackStatus.WinPending;
-  } else if (dealerHandValue > 21) {
-    status = BlackjackStatus.DealerBust;
-  } else if (dealerHandValue >= 17 && dealerHandValue > playerHandValue) {
-    status = BlackjackStatus.Lose;
-  } else if (dealerHandValue >= 17 && playerHandValue > dealerHandValue) {
-    status = BlackjackStatus.Win;
-  } else if (dealerHandValue >= 17 && dealerHandValue === playerHandValue) {
-    status = BlackjackStatus.Push;
-  }
+  if (playerHasBlackjack && dealerHasBlackjack) return BlackjackStatus.Push;
+  if (playerHasBlackjack) return BlackjackStatus.Blackjack;
+  if (dealerHasBlackjack) return BlackjackStatus.Lose;
+  if (playerHandValue > 21) return BlackjackStatus.Bust;
+  if (playerHasRegular21 && !isWinPending) return BlackjackStatus.WinPending;
+  if (dealerHandValue > 21) return BlackjackStatus.DealerBust;
+  if (dealerDone && dealerHandValue > playerHandValue) return BlackjackStatus.Lose;
+  if (dealerDone && playerHandValue > dealerHandValue) return BlackjackStatus.Win;
+  if (dealerDone && dealerHandValue === playerHandValue) return BlackjackStatus.Push;
 
-  return status;
+  return BlackjackStatus.Playing;
 };
 
+/**
+ * Reducer for Blackjack game state.
+ * Handles betting, dealing, hitting, standing, doubling down, and resetting.
+ *
+ * @param state - The current Blackjack state
+ * @param action - The dispatched action
+ * @returns The next Blackjack state
+ */
 export const blackjackReducer = (
   state: BlackjackState,
   action: BlackjackAction
@@ -64,20 +76,20 @@ export const blackjackReducer = (
         bet: action.payload,
       };
 
-    case 'GAME_START':
+    case 'GAME_START': {
       const deck: PlayCard[] = [...action.payload.deck];
-
       const playerHand = [drawCard(deck), drawCard(deck)];
       const dealerHand = [drawCard(deck)];
 
       return {
         ...state,
         bet: action.payload.bet,
-        deck: deck,
+        deck,
         double: false,
-        playerHand: playerHand,
-        dealerHand: dealerHand,
+        playerHand,
+        dealerHand,
       };
+    }
 
     case 'SET_STATUS':
       return {
@@ -89,14 +101,12 @@ export const blackjackReducer = (
         ),
       };
 
-    case 'DOUBLE':
+    case 'DOUBLE': {
       if (state.deck.length === 0 || !state.bet) return state;
 
       const copyDeck = [...state.deck];
       const newPlayerHand = [...state.playerHand, drawCard(copyDeck)];
-
       const playerHandValue = getHandValue(newPlayerHand);
-
       const newDealerHand =
         playerHandValue < 21
           ? dealerPlay(copyDeck, [...state.dealerHand])
@@ -109,8 +119,9 @@ export const blackjackReducer = (
         dealerHand: newDealerHand,
         playerHand: newPlayerHand,
       };
+    }
 
-    case 'HIT':
+    case 'HIT': {
       if (state.deck.length === 0) return state;
 
       const updatedDeck = [...state.deck];
@@ -121,8 +132,9 @@ export const blackjackReducer = (
         deck: updatedDeck,
         playerHand: updatedPlayerHand,
       };
+    }
 
-    case 'STAND':
+    case 'STAND': {
       const currentDeck = [...state.deck];
       const updatedDealerHand = dealerPlay(currentDeck, [...state.dealerHand]);
 
@@ -131,6 +143,7 @@ export const blackjackReducer = (
         deck: currentDeck,
         dealerHand: updatedDealerHand,
       };
+    }
 
     case 'GAME_RESET':
       return {

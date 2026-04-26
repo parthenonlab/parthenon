@@ -1,22 +1,24 @@
-import { Document } from 'mongoose';
 import { GameCode } from '@/enums/games';
 
-export type GameData = Record<string, string | string[] | number>;
+export type BlackjackGameData = { bet: number };
+export type WordleGameData = { answer: string; guesses: string[] };
+export type ActiveGameData = BlackjackGameData | WordleGameData;
 
-export interface GameDocument extends Document {
+export interface ActiveGame {
   discord_id: string;
   code: GameCode;
-  key?: string;
-  data: GameData;
+  key: string;
+  data: ActiveGameData;
 }
 
-export interface GameObject {
-  discord_id: string;
+export interface ActiveGameRequest {
   code: GameCode;
   key?: string;
-  data: GameData;
+  data: { sessionKey?: string; sessionCode?: string };
 }
 
-export interface LeanGameDocument extends GameObject {
-  _id: string;
+export interface ActiveGameResult<TStats = unknown> {
+  key: string;
+  cashDelta?: number;
+  stats?: TStats;
 }

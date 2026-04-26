@@ -3,16 +3,16 @@ import ChartDataLabels, { Context } from 'chartjs-plugin-datalabels';
 import { Bar } from 'react-chartjs-2';
 
 import { INITIAL_WORDLE } from '@/constants/stats';
-import { WordleStats } from '@/interfaces/games';
+import { WordleStats } from '@parthenonlab/types';
 
 import styles from '../styles/stats.module.scss';
 
 ChartJS.register(...registerables, ChartDataLabels);
 
 export const Stats = ({ data = INITIAL_WORDLE }: { data?: WordleStats }) => {
-  const winPercentage = !data.totalPlayed
+  const winPercentage = !data.totalPlays
     ? 'N/A'
-    : Math.round((data.totalWon / data.totalPlayed) * 100) + '%';
+    : Math.round((data.totalWon / data.totalPlays) * 100) + '%';
 
   return (
     <div className={styles.container}>
@@ -21,7 +21,7 @@ export const Stats = ({ data = INITIAL_WORDLE }: { data?: WordleStats }) => {
         <p>Win Percentage: {winPercentage}</p>
         <p>Max Streak: {data.maxStreak}</p>
         <p>Current Streak: {data.currentStreak}</p>
-        <p>Total Times Played: {data.totalPlayed}</p>
+        <p>Total Times Played: {data.totalPlays}</p>
         <p>Guess Distribution</p>
       </div>
       <Bar

@@ -14,18 +14,11 @@ export interface WordleState {
   status: WordleStatus;
 }
 
-export interface WordleStats {
-  currentStreak: number;
-  distribution: number[];
-  maxStreak: number;
-  totalPlayed: number;
-  totalWon: number;
-}
-
 export type WordleAction =
   | { type: 'play' }
   | { type: 'delete' }
   | { type: 'enter' }
   | { type: 'key'; letter: string }
   | { type: 'reset' }
-  | { type: 'resume' };
+  | { type: 'resume' }
+  | { type: 'network_error' };

@@ -1,6 +1,6 @@
 {
   "name": "parthenon",
-  "version": "1.4.4",
+  "version": "2.0.0",
   "private": true,
   "author": {
     "name": "Athena",
@@ -11,28 +11,34 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "jest"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.36.10",
-    "@vercel/analytics": "^1.6.1",
-    "chart.js": "^4.5.0",
+    "@clerk/nextjs": "^7.0.8",
+    "@parthenonlab/models": "^0.2.4",
+    "@parthenonlab/types": "^0.2.5",
+    "@vercel/analytics": "^2.0.1",
+    "chart.js": "^4.5.1",
     "chartjs-plugin-datalabels": "^2.2.0",
-    "mongoose": "^9.1.5",
-    "next": "^16.1.6",
+    "mongoose": "^9.3.3",
+    "next": "^16.2.2",
     "react": "^19.2.4",
     "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.4",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@types/node": "^24.1.0",
-    "@types/react": "^19.2.10",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/uuid": "^11.0.0",
-    "eslint": "^9.32.0",
-    "eslint-config-next": "^16.1.6",
-    "sass": "^1.97.3",
-    "typescript": "^5.9.3"
+    "eslint": "^10.1.0",
+    "eslint-config-next": "^16.2.2",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "sass": "^1.98.0",
+    "typescript": "^6.0.2"
   }
 }
