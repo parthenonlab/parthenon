@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
+import { mergeNotification } from '@/lib/utils';
 import { attemptUserMerge } from '@/services/user';
 
 /**
@@ -37,7 +38,8 @@ export const POST = withApiAuth(
         );
       }
 
-      const user = await attemptUserMerge(payload);
+      const { user, merged } = await attemptUserMerge(payload);
+      if (user && merged) await mergeNotification(user);
 
       return NextResponse.json(user);
     } catch (error) {
