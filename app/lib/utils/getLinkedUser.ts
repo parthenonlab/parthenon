@@ -24,6 +24,7 @@ export const getLinkedUser = async (
     return fetchPost<User>(API_URLS.USERS, {
       discord_id: discordInfo.providerUserId,
       twitch_id: twitchInfo.providerUserId,
+      twitch_username: twitchInfo.username ?? undefined,
     });
   }
 

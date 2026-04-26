@@ -33,9 +33,10 @@ const FAQ = () => {
         </ol>
         <h2>What if I linked the wrong account?</h2>
         <p>
-          In the Discord server, use the <code>/unlink</code> command to unlink
-          your accounts. All of your coins will stay in your Discord account and
-          your Twitch account will not be associated anymore.
+          You can go back to the Home page and unlink your accounts by clicking
+          the "Unlink Twitch Account" button. All of your coins will stay in
+          your Discord account and your Twitch account will not be associated
+          anymore.
         </p>
         <h2>Can I add Little Owl to my server?</h2>
         <p>
