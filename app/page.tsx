@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
+import { redirect, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import { SignInButton, useUser } from '@clerk/nextjs';
 
 import { Header, Loading } from '@/components';
@@ -18,10 +19,12 @@ import {
 
 import styles from '@/styles/page.module.scss';
 
-const Home = () => {
+const HomeContent = () => {
   const { isLoaded, isSignedIn } = useUser();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect_url') ?? '/dashboard';
 
-  if (isSignedIn) return redirect('/dashboard');
+  if (isSignedIn) return redirect(redirectUrl);
 
   return (
     <>
@@ -45,7 +48,7 @@ const Home = () => {
             <p>The official website of the AthenaUS community</p>
           </div>
           <div className={styles.login}>
-            <SignInButton>LOGIN</SignInButton>
+            <SignInButton forceRedirectUrl={redirectUrl}>LOGIN</SignInButton>
           </div>
           <div className={styles.social}>
             <p>Connect with me!</p>
@@ -72,5 +75,11 @@ const Home = () => {
     </>
   );
 };
+
+const Home = () => (
+  <Suspense fallback={<Loading />}>
+    <HomeContent />
+  </Suspense>
+);
 
 export default Home;
