@@ -35,23 +35,26 @@ const sendDiscordEmbed = async (
   }
 };
 
+const isDev = process.env.NODE_ENV === 'development';
+const devSuffix = isDev ? ' (dev)' : '';
+
 export const loginNotification = (user: User) =>
-  sendDiscordEmbed(`${getUserName(user)} logged in.`, getUserFooter(user));
+  sendDiscordEmbed(`${getUserName(user)} logged in.${devSuffix}`, getUserFooter(user));
 
 export const mergeNotification = (user: User) =>
   sendDiscordEmbed(
-    `${getUserName(user)} linked their Twitch account.`,
+    `${getUserName(user)} linked their Twitch account.${devSuffix}`,
     getUserFooter(user),
   );
 
 export const unlinkNotification = (user: User) =>
   sendDiscordEmbed(
-    `${getUserName(user)} unlinked their Twitch account.`,
+    `${getUserName(user)} unlinked their Twitch account.${devSuffix}`,
     getUserFooter(user),
   );
 
 export const upgradeNotification = (user: User) =>
   sendDiscordEmbed(
-    `${getUserName(user)} upgraded their PC box space.`,
+    `${getUserName(user)} upgraded their PC box space.${devSuffix}`,
     getUserFooter(user),
   );
