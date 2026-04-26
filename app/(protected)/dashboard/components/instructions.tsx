@@ -14,8 +14,7 @@ export const Instructions = ({ code }: { code?: string }) => {
             </p>
             <p className={styles.note}>
               Note: If you have the same email address, login via Discord and it
-              should link automatically. To unlink, use <code>/unlink</code> in
-              the server.
+              should link automatically.
             </p>
           </div>
         </>
@@ -27,7 +26,7 @@ export const Instructions = ({ code }: { code?: string }) => {
             <p>
               If you use the same email address for both platforms, it will link
               automatically. Otherwise, you will be provided a code to submit
-              using <code>/link</code> in the server.
+              using <code>/link</code> in the Discord server.
             </p>
           </div>
         </>

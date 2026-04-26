@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
 
-import { getUser, upgradeBoxSpace } from '@/services/user';
+import { getUser, unlinkTwitch, upgradeBoxSpace } from '@/services/user';
 
 /**
  * GET /api/users/:id?method=
@@ -86,6 +86,22 @@ export const PATCH = withApiAuth(
           );
 
         return NextResponse.json(result);
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error:
+              error instanceof Error ? error.message : 'Internal server error',
+          },
+          { status: 500 },
+        );
+      }
+    }
+
+    if (action === 'unlink_twitch') {
+      try {
+        await connectDatabase();
+        await unlinkTwitch(discordId);
+        return NextResponse.json({ success: true });
       } catch (error) {
         return NextResponse.json(
           {

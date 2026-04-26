@@ -16,13 +16,14 @@ const BOX_UPGRADE_SLOTS = 10;
 export const attemptUserMerge = async (payload: {
   discord_id: string;
   twitch_id: string;
+  twitch_username?: string | null;
 }): Promise<User | null> => {
-  const { discord_id, twitch_id } = payload;
+  const { discord_id, twitch_id, twitch_username } = payload;
 
   const discordDoc = await UserModel.findOne({ discord_id });
   const discordData = discordDoc ? (discordDoc.toObject() as User) : null;
 
-  if (discordData && discordData.twitch_id) return discordData;
+  if (discordData?.twitch_id) return discordData;
 
   const twitchDoc = await UserModel.findOne({ twitch_id });
   const twitchData = twitchDoc ? (twitchDoc.toObject() as User) : null;
@@ -41,7 +42,22 @@ export const attemptUserMerge = async (payload: {
     return updatedUser;
   }
 
-  return discordData ?? twitchData ?? null;
+  if (discordData) {
+    const updatedUser: User = {
+      ...discordData,
+      twitch_id,
+      twitch_username: twitch_username ?? null,
+    };
+
+    await UserModel.findOneAndUpdate(
+      { discord_id },
+      { $set: { twitch_id, twitch_username: twitch_username ?? null } },
+    );
+
+    return updatedUser;
+  }
+
+  return twitchData ?? null;
 };
 
 /**
@@ -98,6 +114,18 @@ export const deductCash = async (
     { $inc: { cash: -amount } },
   );
   return !!user;
+};
+
+/**
+ * Unlinks the Twitch account from a user by setting twitch_id and twitch_username to null.
+ *
+ * @param discordId - The Discord user ID
+ */
+export const unlinkTwitch = async (discordId: string): Promise<void> => {
+  await UserModel.findOneAndUpdate(
+    { discord_id: discordId },
+    { $set: { twitch_id: null, twitch_username: null } },
+  );
 };
 
 /**
