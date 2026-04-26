@@ -17,8 +17,10 @@ export const useBlackjack = () => {
   };
 
   const onPlay = (bet: number) => {
-    const newDeck = createCardDeck();
-    const deck: PlayCard[] = shuffleDeck([...newDeck, ...newDeck]);
+    const deck: PlayCard[] =
+      state.deck.length >= 15
+        ? state.deck
+        : shuffleDeck(Array.from({ length: 6 }, createCardDeck).flat());
     dispatch({ type: 'GAME_START', payload: { bet, deck } });
   };
 
