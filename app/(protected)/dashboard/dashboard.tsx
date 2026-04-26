@@ -19,29 +19,24 @@ export const Dashboard = () => {
     if (!isUserFetched) return <Loading />;
     if (!user) return <Register />;
 
-    if (user.discord_username) {
-      if (user.twitch_username) {
-        return (
-          <AccountLinked
-            discord={user.discord_username ?? 'Discord'}
-            twitch={user.twitch_username ?? 'Twitch'}
-          />
-        );
-      } else {
-        return <Instructions />;
-      }
-    } else {
-      return user.twitch_username && <Instructions code={user.user_id} />;
-    }
+    if (!user.discord_username)
+      return user.twitch_username ? <Instructions code={user.user_id} /> : null;
+
+    if (!user.twitch_username) return <Instructions />;
+
+    return (
+      <AccountLinked
+        discord={user.discord_username}
+        twitch={user.twitch_username}
+      />
+    );
   };
 
-  let displayName = '';
+  const nameLabel =
+    user &&
+    (user.discord_name ?? user.discord_username ?? user.twitch_username);
 
-  if (user) {
-    if (user.discord_name) displayName = `, ${user.discord_name}`;
-    else if (user.discord_username) displayName = `, ${user.discord_username}`;
-    else if (user.twitch_username) displayName = `, ${user.twitch_username}`;
-  }
+  const displayName = nameLabel ? `, ${nameLabel}` : '';
 
   return (
     <div className={styles.dashboard}>

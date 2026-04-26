@@ -16,8 +16,8 @@ const ProtectedLayout = ({
   children: React.ReactNode;
 }>) => {
   const { isLoaded, isSignedIn, user: userClerk } = useUser();
-  const { fetchGet, fetchPost } = useFetch();
 
+  const { fetchGet, fetchPost } = useFetch();
   const { isUserFetched, setStateUser, user } = useParthenon();
 
   const fetchUser = useCallback(async () => {
