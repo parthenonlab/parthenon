@@ -25,6 +25,7 @@
   --owl-blue-lightest: rgba(147, 199, 255, 0.1);
   --plum: #8b4382;
   --red-casino: #cc0007;
+  --red-pokemon: #c03028;
   --silver: #bbbbbb;
   --twitch-light: rgba(100, 65, 165, 0.8);
   --twitch-lighter: rgba(100, 65, 165, 0.2);
@@ -94,7 +95,9 @@ body {
   font-family: var(--font-figtree);
   font-optical-sizing: auto;
   font-size: 16px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

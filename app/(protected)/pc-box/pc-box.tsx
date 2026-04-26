@@ -138,7 +138,14 @@ export const PcBox = () => {
             <SilverIcon size={14} />
           </p>
           <p className={styles.upgradeInfo}>
-            Available Space: {capacity - catches.length} / {capacity}
+            Available Space: {Math.max(0, capacity - catches.length)} /{' '}
+            {capacity}
+            {catches.length >= capacity && (
+              <>
+                {' '}
+                — <span className={styles.full}>FULL</span>
+              </>
+            )}
           </p>
           <button
             className={styles.upgradeButton}
