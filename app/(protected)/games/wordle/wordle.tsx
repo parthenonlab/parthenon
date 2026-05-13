@@ -30,6 +30,8 @@ import { Loading, Modal } from '@/components';
 import { AnswerGrid, Keyboard, Notice, Rules, Stats } from './components';
 import styles from '../shared/styles/page.module.scss';
 
+const initialGuessResult = Array(WORD_LENGTH).fill(WordleKeyStatus.Default);
+
 export const Wordle = () => {
   const { isUserFetched, setStateUser, user } = useParthenon();
   const { modalType, openModal, closeModal } = useModal<'rules' | 'stats'>();
@@ -61,24 +63,23 @@ export const Wordle = () => {
   const currentGuessRef = useRef(currentGuess);
   const gameKeyRef = useRef<string | null>(null);
   const gameStatusRef = useRef(status);
+  const hasNotifiedRef = useRef(false);
+  const isUpdatingRef = useRef(false);
+  const pendingNewGameRef = useRef(false);
 
   currentGuessRef.current = currentGuess;
   gameStatusRef.current = status;
 
-  const fetchStats = useCallback(async () => {
-    if (!user?.discord_id) return;
-
-    const data = await fetchGet<StatsData>(
-      `${API_URLS.STATS}/${user.discord_id}`,
-    );
-    setStats(data?.[GameCode.Wordle] ?? INITIAL_WORDLE);
-    setIsStatsFetched(true);
-  }, [fetchGet, user]);
+  const discordId = user?.discord_id;
 
   useEffect(() => {
-    if (!isUserFetched || isStatsFetched) return;
-    fetchStats();
-  }, [fetchStats, isStatsFetched, isUserFetched]);
+    if (!isUserFetched || isStatsFetched || !discordId) return;
+
+    fetchGet<StatsData>(`${API_URLS.STATS}/${discordId}`).then(data => {
+      setStats(data?.[GameCode.Wordle] ?? INITIAL_WORDLE);
+      setIsStatsFetched(true);
+    });
+  }, [discordId, fetchGet, isStatsFetched, isUserFetched]);
 
   const getGame = useCallback(async (): Promise<boolean> => {
     const game = await fetchPost<
@@ -128,7 +129,11 @@ export const Wordle = () => {
       gameStatusRef.current === WordleStatus.Answered ||
       gameStatusRef.current === WordleStatus.Completed
     ) {
-      onPlay();
+      if (isUpdatingRef.current) {
+        pendingNewGameRef.current = true;
+      } else {
+        onPlay();
+      }
       return;
     }
 
@@ -137,27 +142,38 @@ export const Wordle = () => {
     if (currentGuessRef.current.length < WORD_LENGTH) return;
     if (!WORD_LIST.includes(currentGuessRef.current)) return;
 
+    isUpdatingRef.current = true;
     const result = await updateGame(currentGuessRef.current);
+    isUpdatingRef.current = false;
+
     if (!result) {
+      pendingNewGameRef.current = false;
       onNetworkError();
       return;
     }
+
     if (result.stats) setStats(result.stats);
     if (result.cashDelta && user)
       setStateUser({ ...user, cash: user.cash + result.cashDelta });
+
+    if (pendingNewGameRef.current) {
+      pendingNewGameRef.current = false;
+      onPlay();
+    }
   }, [onEnter, onNetworkError, onPlay, setStateUser, updateGame, user]);
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
-      event.preventDefault();
-
       const { key } = event;
 
       if (key === 'Enter') {
+        event.preventDefault();
         modifiedEnter();
       } else if (key === 'Backspace') {
+        event.preventDefault();
         onDelete();
       } else if (/^[a-zA-Z]$/.test(key)) {
+        event.preventDefault();
         onKey(key.toLowerCase());
       }
     },
@@ -175,6 +191,7 @@ export const Wordle = () => {
   useEffect(() => {
     if (answer.length === 0 || answer === answerRef.current) return;
     answerRef.current = answer;
+    setIsGameReady(false);
     (async () => {
       const success = await getGame();
       if (!success) {
@@ -184,14 +201,31 @@ export const Wordle = () => {
     })();
   }, [answer, getGame, onReset]);
 
+  useEffect(() => {
+    if (
+      (status !== WordleStatus.Answered && status !== WordleStatus.Completed) ||
+      hasNotifiedRef.current
+    ) return;
+
+    hasNotifiedRef.current = true;
+    fetchPost(API_URLS.NOTIFY_WORDLE, {
+      answer,
+      guesses: guesses.map(g => g.word),
+      reward,
+    });
+  }, [answer, fetchPost, guesses, status]);
+
+  useEffect(() => {
+    if (status === WordleStatus.Playing) hasNotifiedRef.current = false;
+  }, [status]);
+
   const handleBack = useCallback(() => {
+    pendingNewGameRef.current = false;
     onReset();
     setPage(GamePage.Overview);
   }, [onReset]);
 
   if (isUserFetched && (!user || !user?.discord_id)) redirect('/dashboard');
-
-  const initialGuessResult = Array(WORD_LENGTH).fill(WordleKeyStatus.Default);
 
   const guessesArray = useMemo<WordleGuess[]>(() => {
     // + 1 to take into account the current guess
@@ -211,7 +245,7 @@ export const Wordle = () => {
         : [];
 
     return [...guesses, ...currentGuessArray, ...fillArray];
-  }, [currentGuess, guesses, initialGuessResult]);
+  }, [currentGuess, guesses]);
 
   return (
     <div className={styles.wordle}>

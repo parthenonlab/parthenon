@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
@@ -38,8 +39,11 @@ export const POST = withApiAuth(
         );
       }
 
-      const { user, merged } = await attemptUserMerge(payload);
-      if (user && merged) await mergeNotification(user);
+      const [{ user, merged }, clerkUser] = await Promise.all([
+        attemptUserMerge(payload),
+        currentUser(),
+      ]);
+      if (user && merged) await mergeNotification(user, clerkUser?.imageUrl);
 
       return NextResponse.json(user);
     } catch (error) {
