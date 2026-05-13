@@ -201,6 +201,7 @@ export const Wordle = () => {
   }, [answer, getGame, onReset]);
 
   const handleBack = useCallback(() => {
+    pendingNewGameRef.current = false;
     onReset();
     setPage(GamePage.Overview);
   }, [onReset]);
