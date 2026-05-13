@@ -69,19 +69,21 @@ export const GameTable = ({
   const handleReset = useCallback(async () => {
     if (!user || !bet) return;
 
-    prevPlayerLengthRef.current = 0;
-    prevDealerLengthRef.current = 0;
-
-    setGameKey(k => k + 1);
     setDealerTotal(0);
     setPlayerTotal(0);
-
     setIsResetting(true);
+
     const success = await getGame(true);
+
+    if (!success) {
+      setIsResetting(false);
+      return;
+    }
+
+    prevPlayerLengthRef.current = 0;
+    prevDealerLengthRef.current = 0;
     setIsResetting(false);
-
-    if (!success) return;
-
+    setGameKey(k => k + 1);
     onPlay(bet);
     setStateUser({ ...user, cash: user.cash - bet });
   }, [bet, getGame, onPlay, setStateUser, user]);
