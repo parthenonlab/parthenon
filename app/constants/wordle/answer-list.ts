@@ -604,7 +604,6 @@ export const ANSWER_LIST = [
   'fraud',
   'freak',
   'fresh',
-  'frier',
   'frill',
   'frisk',
   'frizz',
