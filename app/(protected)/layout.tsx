@@ -35,7 +35,7 @@ const ProtectedLayout = ({
       if (data && !sessionStorage.getItem('parthenon_login_notified')) {
         sessionStorage.setItem('parthenon_login_notified', 'true');
 
-        await fetchPost(API_URLS.NOTIFY_LOGIN, {});
+        await fetchPost(API_URLS.NOTIFY_LOGIN, { path: window.location.pathname });
       }
     } catch {
       setStateUser(null);

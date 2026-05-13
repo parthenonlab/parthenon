@@ -14,6 +14,7 @@ import { useBlackjack, useFetch, useModal, useParthenon } from '@/hooks';
 import { BackIcon, RulesIcon, StatsIcon } from '@/images/icons';
 import { ActiveGameRequest, ActiveGameResult } from '@/interfaces/games';
 import { encrypt } from '@/lib/utils/encryption';
+import { getHandValue } from '@/lib/utils/cards';
 
 import { Loading, Modal } from '@/components';
 import { Balance, GameTable, Rules, Stats } from './components';
@@ -131,8 +132,15 @@ export const Blackjack = () => {
         const result = await updateGame();
         if (!result) return;
         if (result.stats) setStats(result.stats);
-        if (result.cashDelta !== undefined)
+        if (result.cashDelta !== undefined) {
           updateUser({ cash: user.cash + result.cashDelta });
+          fetchPost(API_URLS.NOTIFY_BLACKJACK, {
+            playerTotal: getHandValue(playerHand),
+            dealerTotal: getHandValue(dealerHand),
+            result: status,
+            cashDelta: result.cashDelta,
+          });
+        }
       } catch {
         // game result failed to save — outcome is not persisted
       }
