@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
@@ -77,6 +78,7 @@ export const PATCH = withApiAuth(
 
     try {
       await connectDatabase();
+      const clerkUser = await currentUser();
 
       if (action === 'upgrade_box') {
         const user = await getUser(discordId, 'discord');
@@ -88,14 +90,18 @@ export const PATCH = withApiAuth(
             { status: 400 },
           );
 
-        if (user) await upgradeNotification(user);
+        if (user) {
+          const linked = !!(user.discord_id && user.twitch_id);
+          const totalSpace = (user.subscriber ? 300 : 30) + (linked ? 50 : 0) + result.box_space;
+          await upgradeNotification(user, totalSpace, clerkUser?.imageUrl);
+        }
         return NextResponse.json(result);
       }
 
       if (action === 'unlink_twitch') {
         const user = await getUser(discordId, 'discord');
         await unlinkTwitch(discordId);
-        if (user) await unlinkNotification(user);
+        if (user) await unlinkNotification(user, clerkUser?.imageUrl);
         return NextResponse.json({ success: true });
       }
 

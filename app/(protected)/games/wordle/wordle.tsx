@@ -63,6 +63,7 @@ export const Wordle = () => {
   const currentGuessRef = useRef(currentGuess);
   const gameKeyRef = useRef<string | null>(null);
   const gameStatusRef = useRef(status);
+  const hasNotifiedRef = useRef(false);
   const isUpdatingRef = useRef(false);
   const pendingNewGameRef = useRef(false);
 
@@ -199,6 +200,24 @@ export const Wordle = () => {
       }
     })();
   }, [answer, getGame, onReset]);
+
+  useEffect(() => {
+    if (
+      (status !== WordleStatus.Answered && status !== WordleStatus.Completed) ||
+      hasNotifiedRef.current
+    ) return;
+
+    hasNotifiedRef.current = true;
+    fetchPost(API_URLS.NOTIFY_WORDLE, {
+      answer,
+      guesses: guesses.map(g => g.word),
+      reward,
+    });
+  }, [answer, fetchPost, guesses, status]);
+
+  useEffect(() => {
+    if (status === WordleStatus.Playing) hasNotifiedRef.current = false;
+  }, [status]);
 
   const handleBack = useCallback(() => {
     pendingNewGameRef.current = false;

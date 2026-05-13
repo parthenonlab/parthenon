@@ -3,7 +3,7 @@ import { currentUser } from '@clerk/nextjs/server';
 
 import { connectDatabase } from '@/lib/database';
 import { withApiAuth } from '@/lib/server';
-import { loginNotification } from '@/lib/utils';
+import { wordleNotification } from '@/lib/utils';
 import { getUser } from '@/services/user';
 
 export const POST = withApiAuth(
@@ -18,9 +18,9 @@ export const POST = withApiAuth(
         getUser(discordId, 'discord'),
         currentUser(),
       ]);
-      const { path } = await request.json().catch(() => ({ path: undefined }));
+      const { answer, guesses, reward } = await request.json();
 
-      if (user) await loginNotification(user, clerkUser?.imageUrl, path);
+      if (user) await wordleNotification(user, answer, guesses, reward, clerkUser?.imageUrl);
 
       return NextResponse.json({ success: true });
     } catch (error) {

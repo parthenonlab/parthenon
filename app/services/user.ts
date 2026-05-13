@@ -60,7 +60,7 @@ export const upgradeBoxSpace = async (
   const updated = await UserModel.findOneAndUpdate(
     { discord_id, cash: { $gte: BOX_UPGRADE_COST } },
     { $inc: { cash: -BOX_UPGRADE_COST, box_space: BOX_UPGRADE_SLOTS } },
-    { new: true },
+    { returnDocument: 'after' },
   );
 
   if (!updated) return null;
