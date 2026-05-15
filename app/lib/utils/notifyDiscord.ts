@@ -115,7 +115,7 @@ export const blackjackNotification = (
             `Reward: ${cashDelta > 0 ? '+' : ''}${formatNumberToString(cashDelta)}`,
           ]
         : []),
-      `Balance: ${formatNumberToString(user.cash + cashDelta)}`,
+      `Balance: ${formatNumberToString(user.cash)}`,
     ].join('\n'),
     author: getUserAuthor(user, `Blackjack Game${devSuffix}`, imageUrl),
     footer: getUserFooter(user),
