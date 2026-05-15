@@ -1,4 +1,5 @@
 import { User } from '@parthenonlab/types';
+import { formatNumberToString } from '@/lib/utils';
 
 interface EmbedAuthor {
   name: string;
@@ -22,7 +23,11 @@ const getUserFooter = (user: User) =>
     ? `Discord ID: ${user.discord_id}`
     : `Twitch ID: ${user.twitch_id}`;
 
-const getUserAuthor = (user: User, label: string, imageUrl?: string): EmbedAuthor => ({
+const getUserAuthor = (
+  user: User,
+  label: string,
+  imageUrl?: string,
+): EmbedAuthor => ({
   name: `${getUserName(user)} - ${label}`,
   ...(imageUrl && { icon_url: imageUrl }),
 });
@@ -58,7 +63,11 @@ const sendDiscordEmbed = async (options: EmbedOptions): Promise<void> => {
 const isDev = process.env.NODE_ENV === 'development';
 const devSuffix = isDev ? ' (dev)' : '';
 
-export const loginNotification = (user: User, imageUrl?: string, path?: string) =>
+export const loginNotification = (
+  user: User,
+  imageUrl?: string,
+  path?: string,
+) =>
   sendDiscordEmbed({
     description: path ? `Path: ${path}` : undefined,
     author: getUserAuthor(user, `User Login${devSuffix}`, imageUrl),
@@ -77,7 +86,11 @@ export const unlinkNotification = (user: User, imageUrl?: string) =>
     footer: getUserFooter(user),
   });
 
-export const upgradeNotification = (user: User, boxSpace: number, imageUrl?: string) =>
+export const upgradeNotification = (
+  user: User,
+  boxSpace: number,
+  imageUrl?: string,
+) =>
   sendDiscordEmbed({
     description: `Available Space: ${boxSpace}`,
     author: getUserAuthor(user, `PC Box Upgrade${devSuffix}`, imageUrl),
@@ -91,28 +104,28 @@ export const blackjackNotification = (
   result: string,
   cashDelta: number,
   imageUrl?: string,
-) => {
-  const rewardStr = cashDelta > 0 ? `+${cashDelta.toLocaleString()}` : cashDelta.toLocaleString();
-  const newBalance = user.cash + cashDelta;
-
-  return sendDiscordEmbed({
+) =>
+  sendDiscordEmbed({
     description: [
       `User: ${playerTotal} | Dealer: ${dealerTotal}`,
       `Result: ${result}`,
       '',
-      `Reward: ${rewardStr}`,
-      `Balance: ${newBalance.toLocaleString()}`,
+      ...(cashDelta !== 0
+        ? [
+            `Reward: ${cashDelta > 0 ? '+' : ''}${formatNumberToString(cashDelta)}`,
+          ]
+        : []),
+      `Balance: ${formatNumberToString(user.cash + cashDelta)}`,
     ].join('\n'),
     author: getUserAuthor(user, `Blackjack Game${devSuffix}`, imageUrl),
     footer: getUserFooter(user),
   });
-};
 
 export const wordleNotification = (
   user: User,
   answer: string,
   guesses: string[],
-  reward: number | null,
+  reward: number,
   imageUrl?: string,
 ) =>
   sendDiscordEmbed({
@@ -120,8 +133,8 @@ export const wordleNotification = (
       `Answer: ${answer}`,
       `Guesses: ${guesses.join(', ')}`,
       '',
-      ...(reward != null ? [`Reward: +${reward}`] : []),
-      `Balance: ${user.cash.toLocaleString()}`,
+      ...(reward !== 0 ? [`Reward: +${formatNumberToString(reward)}`] : []),
+      `Balance: ${formatNumberToString(user.cash + reward)}`,
     ].join('\n'),
     author: getUserAuthor(user, `Wordle Game${devSuffix}`, imageUrl),
     footer: getUserFooter(user),
