@@ -20,7 +20,7 @@ export const POST = withApiAuth(
       ]);
       const { answer, guesses, reward } = await request.json();
 
-      if (user) await wordleNotification(user, answer, guesses, reward, clerkUser?.imageUrl);
+      if (user) await wordleNotification(user, answer, guesses, reward ?? 0, clerkUser?.imageUrl);
 
       return NextResponse.json({ success: true });
     } catch (error) {
