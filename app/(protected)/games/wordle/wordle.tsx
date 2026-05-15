@@ -213,7 +213,7 @@ export const Wordle = () => {
       guesses: guesses.map(g => g.word),
       reward,
     });
-  }, [answer, fetchPost, guesses, status]);
+  }, [answer, fetchPost, guesses, reward, status]);
 
   useEffect(() => {
     if (status === WordleStatus.Playing) hasNotifiedRef.current = false;
