@@ -121,7 +121,7 @@ export const wordleNotification = (
       `Guesses: ${guesses.join(', ')}`,
       '',
       ...(reward != null ? [`Reward: +${reward}`] : []),
-      `Balance: ${user.cash.toLocaleString()}`,
+      `Balance: ${(user.cash + (reward ?? 0)).toLocaleString()}`,
     ].join('\n'),
     author: getUserAuthor(user, `Wordle Game${devSuffix}`, imageUrl),
     footer: getUserFooter(user),
